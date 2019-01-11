@@ -5,3 +5,5 @@ authors = ["jonathan gerber <jlgerber@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+syn = "0.15.24"
+quote = "0.6.10"

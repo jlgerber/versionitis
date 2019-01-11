@@ -16,6 +16,11 @@ impl fmt::Debug for VersionNumber {
 }
 
 impl VersionNumber {
+    /// extract the package name as a &str
+    pub fn package(&self) -> &str {
+        self.name.as_str().split_at(self.index as usize).0
+    }
+
     fn construct_name(name: &str, value: &Vec<u16>) -> String {
 
         let version = value.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".");
@@ -64,18 +69,33 @@ impl ToString for VersionNumber {
     }
 }
 
-// cannot use because we need a lifetime which exceeds 'a
-// impl<'a> FromStr for VersionNumber<'a> {
-//     type Err = std::num::ParseIntError;
-
-//     fn from_str<'b>(s: &'b str) -> Result<Self, Self::Err> {
-
-//     }
-// }
+#[macro_export]
+macro_rules! version {
+    ($e:expr) => {
+        VersionNumber::from_string(
+        stringify!($e).chars().filter(|x| *x != ' ').collect::<String>().as_str()
+        )
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn macrotest() {
+        let sv1 = version!( foo-0.1.0 ) ;
+        let sv2 = VersionNumber::from_string("foo-0.1.0");
+        assert_eq!(sv1, sv2);
+    }
+
+    #[test]
+    fn base() {
+        let package = String::from("fred-0.1.0.1");
+        let sv1 = VersionNumber::from_string(&package).unwrap();
+        assert_eq!(sv1.package(), "fred");
+    }
+
     #[test]
     fn simple_equality() {
         let name = String::from("fred");
