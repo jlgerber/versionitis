@@ -25,7 +25,7 @@ impl<T: Eq+Ord> Interval<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::version_number::owned;
+    use crate::package::owned;
 
     #[test]
     fn single_contains_true() {

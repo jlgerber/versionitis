@@ -6,7 +6,7 @@ type IdxType = i32;
 
 type PMap = HashMap<String, IdxType>;
 
-use crate::version_number::owned::VersionNumber;
+use crate::package::owned::VersionNumber;
 
 pub struct PackageMap {
     arena: Vec<VersionNumber>,

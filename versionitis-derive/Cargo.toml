@@ -1,8 +1,0 @@
-[package]
-name = "versionitis-derive"
-version = "0.1.0"
-authors = ["jonathan gerber <jlgerber@gmail.com>"]
-edition = "2018"
-
-
-[dependencies]

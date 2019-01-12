@@ -1,6 +1,5 @@
 [workspace]
 
 members = [
-    "versionitis-core",
-    "versionitis-derive"
+    "versionitis-core"
 ]
