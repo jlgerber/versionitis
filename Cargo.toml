@@ -1,9 +1,6 @@
-[package]
-name = "versionitis"
-version = "0.1.0"
-authors = ["jonathan gerber <jlgerber@gmail.com>"]
-edition = "2018"
+[workspace]
 
-[dependencies]
-syn = "0.15.24"
-quote = "0.6.10"
+members = [
+    "versionitis-core",
+    "versionitis-derive"
+]
