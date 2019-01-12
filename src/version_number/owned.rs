@@ -4,7 +4,7 @@ use std::fmt;
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
 pub struct VersionNumber {
-    name: String,
+    pub name: String,
     index: u8,
     value: Vec<u16>,
 }
@@ -21,8 +21,11 @@ impl VersionNumber {
         self.name.as_str().split_at(self.index as usize).0
     }
 
-    fn construct_name(name: &str, value: &Vec<u16>) -> String {
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
 
+    fn construct_name(name: &str, value: &Vec<u16>) -> String {
         let version = value.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".");
         format!("{}-{}", name, version)
     }
