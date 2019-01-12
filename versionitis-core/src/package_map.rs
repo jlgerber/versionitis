@@ -6,10 +6,10 @@ type IdxType = i32;
 
 type PMap = HashMap<String, IdxType>;
 
-use crate::package::owned::VersionNumber;
+use crate::package::owned::Package;
 
 pub struct PackageMap {
-    arena: Vec<VersionNumber>,
+    arena: Vec<Package>,
     map: PMap
 }
 
@@ -22,8 +22,8 @@ impl PackageMap {
         }
     }
 
-    /// add a VersionNumber to the map if it doesnt exist
-    pub fn add(&mut self, version: VersionNumber)  {
+    /// add a Package to the map if it doesnt exist
+    pub fn add(&mut self, version: Package)  {
         let name = version.name().to_string();
         if !self.has(name.as_str()) {
             self.arena.push(version);
@@ -35,11 +35,11 @@ impl PackageMap {
         self.map.contains_key(version_str)
     }
 
-    /// given a &str representing a valid package name, create a VersionNumber
+    /// given a &str representing a valid package name, create a Package
     /// and add it into the PackageMap
     pub fn add_str(&mut self, vs: &str) {
         // todo: deal with error
-        let version_num = VersionNumber::from_string(vs).unwrap();
+        let version_num = Package::from_string(vs).unwrap();
         self.add(version_num);
     }
 
@@ -51,15 +51,15 @@ impl PackageMap {
         }
     }
 
-    /// Retrueve the VersionNumber associated with a particular literal. The literal
+    /// Retrueve the Package associated with a particular literal. The literal
     /// is a positive integer (ie it is stored in 1-based list to be compatible with
     /// SAT solver semantics )
-    pub fn at_lit(&self, lit: IdxType) -> Option<&VersionNumber> {
+    pub fn at_lit(&self, lit: IdxType) -> Option<&Package> {
         self.arena.get( (lit - 1) as usize)
     }
 
-    /// Return an option wrapped mutable reference to a VersionNumber
-    pub fn at_lit_mut(&mut self, lit: IdxType) -> Option<&mut VersionNumber> {
+    /// Return an option wrapped mutable reference to a Package
+    pub fn at_lit_mut(&mut self, lit: IdxType) -> Option<&mut Package> {
         self.arena.get_mut( (lit - 1 )as usize)
     }
 
@@ -76,7 +76,7 @@ mod test {
     #[test]
     fn testone() {
         let mut mymap = PackageMap::new();
-        mymap.add(VersionNumber::from_string("foo-0.1.0").unwrap());
+        mymap.add(Package::from_string("foo-0.1.0").unwrap());
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
 
@@ -90,7 +90,7 @@ mod test {
     #[test]
     fn can_add_multiple_times() {
         let mut mymap = PackageMap::new();
-        mymap.add(VersionNumber::from_string("foo-0.1.0").unwrap());
+        mymap.add(Package::from_string("foo-0.1.0").unwrap());
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
         let idx = mymap.get("foo-0.2.1");
