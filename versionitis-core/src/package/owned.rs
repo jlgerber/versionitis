@@ -25,24 +25,23 @@ impl Package {
         format!("{}-{}", self.name, self.version.to_string())
     }
 
-
     /// Construct a Package from a vector of u16
-    pub fn new<T: Into<String>>(name: T, input: Vec<u16>) -> Self {
+    pub fn new<T: Into<String>>(name: T, version: VersionNumber) -> Self {
         Self {
             name: name.into(),
-            version: VersionNumber::new(input)
+            version
         }
     }
 
     /// construct a Package with 3 u16 values
     pub fn semver(name: &str, major: u16, minor: u16, micro: u16) -> Self {
-        let value = vec![major, minor, micro];
+        let value =  VersionNumber::new(vec![major, minor, micro]);
         Self::new(name, value)
     }
 
     /// construct a semver4 from a value
     pub fn semver4(name: &str, major: u16, minor: u16, micro: u16, patch: u16) -> Self {
-        let value = vec![major, minor, micro, patch];
+        let value = VersionNumber::new(vec![major, minor, micro, patch]);
         Self::new(name, value)
     }
 
@@ -56,7 +55,20 @@ impl Package {
             result.push(x);
         }
 
-        Ok( Package::new(pieces[0], result))
+        Ok( Package::new(pieces[0], VersionNumber::new(result)))
+    }
+
+
+    /// Not the FromString trait because of lifetime requirements
+    pub fn  from_strs(name: &str, version: &str) -> Result<Self, std::num::ParseIntError> {
+        // todo support variants
+        let mut result: Vec<u16> = Vec::new();
+        for x in version.split(".").map(|x| x.parse::<u16>()) {
+            let x = x?;
+            result.push(x);
+        }
+
+        Ok( Package::new(name, VersionNumber::new(result)))
     }
 }
 
@@ -91,6 +103,14 @@ mod tests {
         let package = String::from("fred-0.1.0.1");
         let sv1 = Package::from_string(&package).unwrap();
         assert_eq!(sv1.package(), "fred");
+    }
+
+    #[test]
+    fn simple_new() {
+        let name = String::from("fred");
+        let sv1 = Package::semver(&name, 0,1,0);
+        let sv2 = Package::new(name.as_str(), VersionNumber::new(vec![0,1,0]) );
+        assert_eq!(sv1, sv2);
     }
 
     #[test]
