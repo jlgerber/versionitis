@@ -1,0 +1,9 @@
+[package]
+name = "versiony"
+version = "0.1.0"
+authors = ["jonathan gerber <jlgerber@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+versionitis = { path = "../versionitis-core" }
+serde_yaml = "0.8.8"
