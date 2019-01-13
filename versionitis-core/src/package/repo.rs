@@ -8,6 +8,7 @@ use crate::{
     package::owned::Package,
     traits::TrackPackages,
 };
+use serde_derive::{Deserialize,Serialize};
 use std::{
     collections::HashMap,
     iter::Iterator,
@@ -17,21 +18,12 @@ use std::{
 type PackageMap = HashMap<String, Vec<Package>>;
 
 /// The Repo stores package versions for each package
+#[derive(Debug,PartialEq,Eq,Deserialize,Serialize)]
 pub struct Repo {
     packages: PackageMap,
     unchecked: bool, // have we called add_version_nocheck
 }
-/*
-packages:
-    foo:
-        - foo-1.0.1
-        - foo-2
-        - foo-3
-    bar:
-        -
-[packages]
 
- */
 impl Repo {
     /// create a new package repository.
     pub fn new() -> Self {
@@ -133,6 +125,40 @@ impl TrackPackages for Repo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    const REPO: &'static str = r#"---
+packages:
+  fred:
+    - name: fred
+      version:
+        value:
+          - 0
+          - 1
+          - 0
+    - name: fred
+      version:
+        value:
+          - 0
+          - 2
+          - 0
+    - name: fred
+      version:
+        value:
+          - 0
+          - 2
+          - 1
+    - name: fred
+      version:
+        value:
+          - 0
+          - 2
+          - 3
+    - name: fred
+      version:
+        value:
+          - 0
+          - 3
+          - 0
+unchecked: false"#;
 
     fn setup_repo(package_name: &str) -> Repo {
         let mut repo = Repo::new();
@@ -189,6 +215,46 @@ mod tests {
         package.iter().enumerate().for_each(|(idx,pack)| {
             assert_eq!(pack, &Package::from_strs(package_name, versions[idx]).unwrap());
         });
+    }
+
+    #[test]
+    fn serialize() {
+        let mut repo = Repo::new();
+        let package_name = "fred";
+        // make a mess
+        repo.add_version_unchecked(package_name, "0.2.0");
+        repo.add_version_unchecked(package_name, "0.1.0");
+        // duplicate insert
+        repo.add_version_unchecked(package_name, "0.1.0");
+        repo.add_version_unchecked(package_name, "0.2.1");
+        repo.add_version_unchecked(package_name, "0.3.0");
+        // out of order insert
+        repo.add_version_unchecked(package_name, "0.2.3");
+        // clean up
+        repo.dedup_sort();
+        let s = serde_yaml::to_string(&repo).unwrap();
+        assert_eq!(s, REPO);
+    }
+
+    #[test]
+    fn deserialize_from_yaml() {
+        let mut repo = Repo::new();
+        let package_name = "fred";
+        // make a mess
+        repo.add_version_unchecked(package_name, "0.2.0");
+        repo.add_version_unchecked(package_name, "0.1.0");
+        // duplicate insert
+        repo.add_version_unchecked(package_name, "0.1.0");
+        repo.add_version_unchecked(package_name, "0.2.1");
+        repo.add_version_unchecked(package_name, "0.3.0");
+        // out of order insert
+        repo.add_version_unchecked(package_name, "0.2.3");
+        // clean up
+        repo.dedup_sort();
+
+    let deserialized: Repo = serde_yaml::from_str(&REPO).unwrap();
+    assert_eq!(deserialized, repo);
+
     }
 }
 
