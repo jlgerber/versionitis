@@ -1,5 +1,6 @@
 use std::fmt;
 //use core::str::FromStr;
+use crate::errors::VersionitisError;
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
@@ -40,7 +41,7 @@ impl VersionNumber {
     }
 
     /// Not the FromString trait because of lifetime requirements
-    pub fn  from_string(s: &str) -> Result<Self, std::num::ParseIntError> {
+    pub fn  from_string(s: &str) -> Result<Self, VersionitisError> {
         // todo support variants
 
         let mut result: Vec<u16> = Vec::new();
@@ -49,7 +50,7 @@ impl VersionNumber {
             result.push(x);
         }
 
-        Ok( VersionNumber::new(result))
+        Ok(VersionNumber::new(result))
     }
 }
 
@@ -74,8 +75,8 @@ mod tests {
 
     #[test]
     fn macrotest() {
-        let sv1 = vernum!( 0.1.0 ) ;
-        let sv2 = VersionNumber::from_string("0.1.0");
+        let sv1 = vernum!( 0.1.0 ).unwrap() ;
+        let sv2 = VersionNumber::from_string("0.1.0").unwrap();
         assert_eq!(sv1, sv2);
     }
 

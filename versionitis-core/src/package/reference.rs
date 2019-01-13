@@ -1,7 +1,7 @@
 //! NOT IN USE CURRENTLY
 //! PARTIALLY PORTED FROM OLD VERSION
 use std::fmt;
-
+use crate::errors::VersionitisError;
 
 /// Package implements Versionable trait. A Package may be comprised of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
@@ -43,7 +43,7 @@ impl<'a> Package<'a> {
     }
 
     /// Not the FromString trait because of lifetime requirements
-    pub fn  from_string<'b: 'a>(s: &'b str) -> Result<Self, std::num::ParseIntError> {
+    pub fn  from_string<'b: 'a>(s: &'b str) -> Result<Self, VersionitisError> {
         // todo support variants
         let pieces: Vec<&'b str> = s.split("-").collect();
         let mut result: Vec<u16> = Vec::new();
