@@ -115,35 +115,7 @@ impl TrackPackages for Repo {
     fn add_version(&mut self, package_name: &str, version: &str)
     -> Result<Self::AddReturns, Self::Errors> {
         self.add_version_imp(package_name, version, true)
-        /*
-        let pack = Package::from_strs(package_name, version)?;
-        // retrieve the vector of package versions for the supplied
-        // package name. If it exists, verify that the new package's
-        // version is greater than the version of the last package in
-        // the aforementioned vector. Otherwise, return an InvalidPackageVersion
-        // error.
-        match self.packages.get_mut(package_name) {
-            Some(ref mut lst) => {
-                if let Some(last_elem) = lst.last()  {
-                    if *last_elem >= pack {
-                        return Err(
-                            VersionitisError::InvalidPackageVersion(pack.to_string())
-                        );
-                    }
-                }
-                // now we add the new versioned package to the mutable reference
-                // to the vector
-                lst.push(pack);
-                Ok(())
-            },
-            _ => {
-                // the package key does not exist. Create it and add a vec
-                // value which has the new versioned package.
-                self.packages.insert(package_name.to_string(), vec![pack]);
-                Ok(())
-            },
-        }
-        */
+
     }
 
     /// Given a package name (sans version), fetch a vector of Packages wrapped in a
