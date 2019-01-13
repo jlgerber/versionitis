@@ -4,3 +4,5 @@ pub mod interval;
 pub mod package_map;
 pub mod package;
 pub mod errors;
+
+pub use crate::package::repo::Repo;
