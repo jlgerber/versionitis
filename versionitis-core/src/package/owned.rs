@@ -1,9 +1,10 @@
 use std::fmt;
 //use core::str::FromStr;
 use crate::version_number::VersionNumber;
+use serde_derive::{Deserialize,Serialize};
 
 /// Package implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
-#[derive(PartialEq, PartialOrd, Eq, Ord)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize)]
 pub struct Package {
     pub name: String,
     version: VersionNumber,
