@@ -1,5 +1,6 @@
 //! package_map
-//! map package versions to 1 based id
+//!
+//! map package versions to 1 based id, for use with SAT solver.
 //!
 use std::collections::HashMap;
 type IdxType = i32;
