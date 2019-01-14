@@ -1,7 +1,10 @@
 use versionitis::Repo;
-use std::io::Write;
-use std::io::Read;
 use versionitis::traits::TrackPackages;
+use versionitis::errors::VersionitisError;
+use std::fs::File;
+use std::io::{self, Write, Read};
+use std::path::Path;
+
 
 struct RepoRepl {
     repo: Repo,
@@ -32,11 +35,12 @@ impl RepoRepl {
         println!("\nVersionitis - REPL");
         println!("(d) - display repo");
         println!("(l) - load repo from file");
+        println!("(w) - write repo to file");
         println!("(v) - add version");
         println!("(q) - quit");
 
         if let Some(fb) = &self.feedback {
-            println!("FEEDBACK:{}",fb);
+            println!("(ERROR):{}",fb);
         }
         // set feedback back to None
         self.feedback.take();
@@ -79,10 +83,56 @@ impl RepoRepl {
         true
     }
 
+    fn load_from_file(&mut self) -> Result<(),versionitis::errors::VersionitisError> {
+        print!("{}[2J", 27 as char);
+        print!("\n(file):");
+        io::stdout().flush().unwrap();
+        let mut input = String::new();
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                input.pop();
+                if !Path::new(&input).exists() {
+                    self.feedback = Some(format!("path:'{}' does not exist on disk", input));
+                    return Err(VersionitisError::NonExtantFileError(format!("path:'{}' doesn't exist", input)));
+                }
+                println!("loading {}", input);
+                let f = std::fs::File::open(input)?;
+                let r: Repo = serde_yaml::from_reader(f)?;
+                self.repo = r;
+                Ok(())
+            }
+            Err(error) => {self.feedback = Some(error.to_string()); Err(VersionitisError::IoError(error))},
+        }
+    }
+    fn write_repo(&self) -> Result<(), VersionitisError> {
+        print!("{}[2J", 27 as char);
+        print!("\n(output):");
+        io::stdout().flush().unwrap();
+        let mut output = String::new();
+        match io::stdin().read_line(&mut output) {
+            Ok(_) => {
+                output.pop();
+                let f = File::create(output)?;
+                let r = serde_yaml::to_writer(f, &self.repo)?;
+                Ok(r)
+            }
+            Err(e) => {
+                Err(VersionitisError::IoError(e))
+            }
+        }
+
+    }
+
     fn handle_results(&mut self, input: &str) -> bool {
         match input {
             "d" => {self.display_repo();}
-            "l" => {println!("l - load repo from file");}
+            "l" => {println!("l - load repo from file");
+                match self.load_from_file() {
+                    Err(e) => { println!("Error loading file");}
+                    Ok(_) => {}
+                }
+            }
+            "w" => {self.write_repo();}
             "v" => {self.add_version();}
             "q" => {
                 println!("quiting");
@@ -126,7 +176,6 @@ impl RepoRepl {
     let s = serde_yaml::to_string(&repo).unwrap();
     println!("{}",s);
  */
-use std::io;
 
 fn main() {
     let mut repo = RepoRepl::new();
