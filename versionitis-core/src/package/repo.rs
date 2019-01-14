@@ -20,7 +20,7 @@ type PackageMap = HashMap<String, Vec<Package>>;
 /// The Repo stores package versions for each package
 #[derive(Debug,PartialEq,Eq,Deserialize,Serialize)]
 pub struct Repo {
-    packages: PackageMap,
+    pub packages: PackageMap,
     unchecked: bool, // have we called add_version_nocheck
 }
 
