@@ -50,7 +50,6 @@ impl RepoRepl {
             Some(Ok(feedback)) => {
                 println!("\n[STATUS] {}", feedback);
             }
-
             Some(Err(feedback)) => {
                 println!("\n[ERROR] {}", feedback);
             }
@@ -143,7 +142,7 @@ impl RepoRepl {
             }
             Err(error) => {
                 self.feedback = Some(Err(error.to_string()));
-                Err(VersionitisError::IoError(error))
+                Err(VersionitisError::IoError(error.to_string()))
             }
         }
     }
@@ -161,7 +160,7 @@ impl RepoRepl {
                 Ok(r)
             }
             Err(e) => {
-                Err(VersionitisError::IoError(e))
+                Err(VersionitisError::IoError(e.to_string()))
             }
         }
     }

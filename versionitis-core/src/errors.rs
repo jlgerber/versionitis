@@ -1,7 +1,9 @@
 use failure::Fail;
 use std::fmt::Debug;
 
-#[derive(Fail, Debug)]
+/// The primary error class for Versionitis, it leverages the
+/// ever popular Failure crate.
+#[derive(Fail, Debug,Eq,PartialEq)]
 pub enum VersionitisError {
     #[fail(display = "{}", _0)]
     ParseIntError(#[fail(cause)] std::num::ParseIntError),
@@ -10,9 +12,9 @@ pub enum VersionitisError {
     #[fail(display="UnknownPackage: {}", _0)]
     UnknownPackage(String),
     #[fail(display="{}", _0)]
-    SerdeYamlError(#[fail(cause)] serde_yaml::Error),
-    #[fail(display="{}", _0)]
-    IoError(#[fail(cause)] std::io::Error),
+    SerdeYamlError(String),
+    #[fail(display="IoError: {}", _0)]
+    IoError(String),
     #[fail(display="NonExtantFile: {}", _0)]
     NonExtantFileError(String),
     #[fail(display="AddVersionError: {}", _0)]
@@ -28,13 +30,12 @@ impl From<ParseIntError> for VersionitisError {
 
 impl From<serde_yaml::Error> for VersionitisError {
     fn from(err: serde_yaml::Error) -> Self {
-        VersionitisError::SerdeYamlError(err)
+        VersionitisError::SerdeYamlError(err.to_string())
     }
 }
 
-
 impl From<std::io::Error> for VersionitisError {
     fn from(err: std::io::Error) -> Self {
-        VersionitisError::IoError(err)
+        VersionitisError::IoError(err.to_string())
     }
 }

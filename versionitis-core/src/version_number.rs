@@ -2,8 +2,10 @@ use std::fmt;
 //use core::str::FromStr;
 use crate::errors::VersionitisError;
 use serde_derive::{Deserialize,Serialize};
+use std::hash::Hash;
+
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
-#[derive(PartialEq,PartialOrd,Eq,Ord,Deserialize,Serialize)]
+#[derive(PartialEq,PartialOrd,Eq,Ord,Deserialize,Serialize,Hash)]
 pub struct VersionNumber { //todo: use tuple struct instead of struct
     value: Vec<u16>,
 }

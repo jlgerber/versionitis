@@ -2,9 +2,10 @@ use std::fmt;
 //use core::str::FromStr;
 use crate::version_number::VersionNumber;
 use serde_derive::{Deserialize,Serialize};
+use std::hash::Hash;
 
 /// Package implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
-#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize,Hash)]
 pub struct Package {
     pub name: String,
     version: VersionNumber,
@@ -47,7 +48,7 @@ impl Package {
     }
 
     /// Not the FromString trait because of lifetime requirements
-    pub fn  from_string(s: &str) -> Result<Self, std::num::ParseIntError> {
+    pub fn  from_string(s: &str) -> Result<Self, crate::errors::VersionitisError> {
         // todo support variants
         let pieces: Vec<&str> = s.split("-").collect();
         let mut result: Vec<u16> = Vec::new();
@@ -61,7 +62,7 @@ impl Package {
 
 
     /// Not the FromString trait because of lifetime requirements
-    pub fn  from_strs(name: &str, version: &str) -> Result<Self, std::num::ParseIntError> {
+    pub fn  from_strs(name: &str, version: &str) -> Result<Self, crate::errors::VersionitisError> {
         // todo support variants
         let mut result: Vec<u16> = Vec::new();
         for x in version.split(".").map(|x| x.parse::<u16>()) {
