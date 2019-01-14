@@ -35,6 +35,13 @@ pub struct Manifest {
 }
 
 impl Manifest {
+    /// New up a manifest given a name of type Into<String>
+    ///
+    /// # example
+    ///
+    /// ```notest
+    /// let manifest = Manifest::new("rustup");
+    /// ```
     pub fn new<I>(name: I) -> Self where I: Into<String> {
         Self {
             name: name.into(),
@@ -42,11 +49,20 @@ impl Manifest {
         }
     }
 
-    /// Add an dependencies to the set
+    /// Add a dependency to the manifest
+    ///
+    /// # example
+    ///
+    /// ```ignore
+    /// let manifest = Manifest::new("coolpackage");
+    /// let interval = halfopen_from_strs("bar-0.1.0", "bar-1.0.0")?;
+    /// manifest.add_dependency(interval)?;
+    /// ```
     pub fn add_dependency(&mut self, interval: PackageInterval) -> Result<(), VersionitisError> {
         self.dependencies.insert(interval);
         Ok(())
     }
+
     /// Test whether a manifest has a package as a dependency. This method is
     /// only concerned with a package name. It will match any version
     pub fn depends_on(&self, name: &str) -> bool {
@@ -85,10 +101,24 @@ impl Manifest {
     }
 }
 
+/// Construct a package interval from a &str
+///
+/// # example
+///
+/// ```ignore
+/// let interval = single_from_str("foo-0.1.0").unwrap();
+/// ```
 pub fn single_from_str(name: &str) -> Result<Interval<Package>, VersionitisError> {
     Ok(Interval::Single(Package::from_string(name)?))
 }
 
+/// Construct a half open package interval from two &str
+///
+/// # example
+///
+/// ```ignore
+/// let interval = halfopen_from_strs("foo-0.1.0", "foo-1.0.0").unwrap();
+/// ```
 pub fn halfopen_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, VersionitisError> {
     Ok(Interval::HalfOpen{
         start: Package::from_string(p1)?,
@@ -96,7 +126,14 @@ pub fn halfopen_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, Versi
     })
 }
 
-pub fn open_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, VersionitisError> {
+/// Construct an open package interval from two strings
+///
+/// # example
+///
+/// ```ignore
+/// let interval = open_from_strs("foo-0.1.0", "foo-1.0.0")?;
+/// ```
+pub fn open_from_strs(p1: &str, p2: &str) -> Result<PackageInterval, VersionitisError> {
     Ok(Interval::Open{
         start: Package::from_string(p1)?,
         end: Package::from_string(p2)?
@@ -109,7 +146,6 @@ mod tests {
     use super::*;
     // mod interval {
     //     use super::*;
-
     //     #[test]
     //     fn can_construct() {
     //         let pinter = PackageInterval::new("foo", Un);
