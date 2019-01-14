@@ -28,6 +28,22 @@ impl PackageInterval {
 pub type PackageInterval = Interval<Package>;
 pub type IntervalSet     = HashSet<PackageInterval>;
 
+/// Retrieve the package name from a PackageInterval
+pub fn package_name_for(interval: &PackageInterval) -> String {
+    match *interval {
+         Interval::Single(ref v) => {
+                v.package().to_string()
+            }
+
+            Interval::HalfOpen{ref start, ..} => {
+                start.package().to_string()
+            }
+
+            Interval::Open{ref start, ..} => {
+                start.package().to_string()
+            }
+    }
+}
 #[derive(Debug,PartialEq,Eq)]
 pub struct Manifest {
     name: String,
@@ -59,6 +75,11 @@ impl Manifest {
     /// manifest.add_dependency(interval)?;
     /// ```
     pub fn add_dependency(&mut self, interval: PackageInterval) -> Result<(), VersionitisError> {
+
+        let package_name = package_name_for(&interval);
+        if  self.depends_on(package_name.as_str() ) {
+            return Err(VersionitisError::DuplicatePackageDependency(package_name));
+        }
         self.dependencies.insert(interval);
         Ok(())
     }
@@ -170,6 +191,19 @@ mod tests {
             assert_eq!(manifest.dependencies.len(), 2);
         }
 
+
+        #[test]
+        fn cannot_add_duplicate_dependency() {
+            let mut manifest = Manifest::new("fred-1.0.0");
+            let interval1 = single_from_str("foo-0.1.0").unwrap();
+            let interval2 = halfopen_from_strs("bar-0.1.0", "bar-1.0.0").unwrap();
+            let interval3 = open_from_strs("bar-1.1.0", "bar-2.0.0").unwrap();
+
+            manifest.add_dependency(interval1).unwrap();
+            manifest.add_dependency(interval2).unwrap();
+            let result = manifest.add_dependency(interval3);
+            assert!(result.is_err(), "should return err when attempting to add duplicate package");
+        }
 
         #[test]
         fn depends_on() {
