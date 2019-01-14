@@ -38,7 +38,9 @@ impl RepoRepl {
         println!(  "==================\n");
         println!("Options:\n");
         println!("(d) - display repo");
-        println!("(l) - load repo from file");
+        println!("(l) - list versions for package");
+        println!("(p) - list packages");
+        println!("(r) - read repo from file");
         println!("(w) - write repo to file");
         println!("(v) - add version");
         println!("(q) - quit");
@@ -106,9 +108,24 @@ impl RepoRepl {
         Ok(true)
     }
 
+    fn list_packages(&self) {
+        print!("{}[2J", 27 as char);
+        println!("========");
+        println!("Packages");
+        println!("========\n");
+        let mut packs = self.repo.packages.iter().map(|(k,v)| k.to_string()).collect::<Vec<String>>();
+        packs.sort();
+
+        for package in &packs {
+            println!("{}", package);
+        }
+        self.await_user();
+    }
+
     fn load_from_file(&mut self) -> Result<(),versionitis::errors::VersionitisError> {
         print!("{}[2J", 27 as char);
-        print!("\n(file):");
+        let path = std::env::current_dir()?;
+        print!("\n(file [CWD:{}] ):", path.to_str().unwrap());
         io::stdout().flush().unwrap();
         let mut input = String::new();
         match io::stdin().read_line(&mut input) {
@@ -124,7 +141,10 @@ impl RepoRepl {
                 self.repo = r;
                 Ok(())
             }
-            Err(error) => {self.feedback = Some(Err(error.to_string())); Err(VersionitisError::IoError(error))},
+            Err(error) => {
+                self.feedback = Some(Err(error.to_string()));
+                Err(VersionitisError::IoError(error))
+            }
         }
     }
     fn write_repo(&mut self) -> Result<(), VersionitisError> {
@@ -146,15 +166,19 @@ impl RepoRepl {
         }
     }
 
-    fn handle_results(&mut self, input: &str) -> Result<bool,VersionitisError> {
+    fn handle_results(&mut self, input: &str) -> Result<bool, VersionitisError> {
         match input {
 
             "d" => {
                 self.display_repo();
             }
 
-            "l" => {
-                println!("l - load repo from file");
+            "p" => {
+                self.list_packages();
+            }
+
+            "r" => {
+                println!("r - fead repo from file");
                 match self.load_from_file() {
                     Err(e) => {}
                     Ok(_) => { }
@@ -200,22 +224,7 @@ impl RepoRepl {
 }
 
 
-/*
- let package_name = "fred";
-    // make a mess
-    repo.add_version_unchecked(package_name, "0.2.0");
-    repo.add_version_unchecked(package_name, "0.1.0");
-    // duplicate insert
-    repo.add_version_unchecked(package_name, "0.1.0");
-    repo.add_version_unchecked(package_name, "0.2.1");
-    repo.add_version_unchecked(package_name, "0.3.0");
-    // out of order insert
-    repo.add_version_unchecked(package_name, "0.2.3");
-    // clean up
-    repo.dedup_sort();
-    let s = serde_yaml::to_string(&repo).unwrap();
-    println!("{}",s);
- */
+
 
 fn main() {
     let mut repo = RepoRepl::new();
