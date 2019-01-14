@@ -15,6 +15,8 @@ pub enum VersionitisError {
     IoError(#[fail(cause)] std::io::Error),
     #[fail(display="NonExtantFile: {}", _0)]
     NonExtantFileError(String),
+    #[fail(display="AddVersionError: {}", _0)]
+    AddVersionError(String),
 }
 
 use std::num::ParseIntError;
