@@ -9,7 +9,7 @@ type Feedback = Option<Result<String, String>>;
 
 struct RepoRepl {
     repo: Repo,
-    feedback: Option<String>,
+    feedback:Feedback,
 }
 
 impl RepoRepl {
@@ -33,16 +33,28 @@ impl RepoRepl {
 
     fn print_cmds(&mut self) {
         print!("{}[2J", 27 as char);
-        println!("\nVersionitis - REPL");
+        println!(  "\n==================");
+        println!("Versionitis - REPL");
+        println!(  "==================\n");
+        println!("Options:\n");
         println!("(d) - display repo");
         println!("(l) - load repo from file");
         println!("(w) - write repo to file");
         println!("(v) - add version");
         println!("(q) - quit");
 
-        if let Some(fb) = &self.feedback {
-            println!("(ERROR):{}",fb);
+        match &self.feedback {
+
+            Some(Ok(feedback)) => {
+                println!("\n[STATUS] {}", feedback);
+            }
+
+            Some(Err(feedback)) => {
+                println!("\n[ERROR] {}", feedback);
+            }
+            _ => {}
         }
+
         // set feedback back to None
         self.feedback.take();
         print!("\n(choice):");
@@ -78,7 +90,7 @@ impl RepoRepl {
                         self.await_user();
                     }
                     Err(e) => {
-                        self.feedback = Some(e.to_string());
+                        self.feedback = Some(Err(e.to_string()));
                         //self.await_user();
                         return Err(VersionitisError::AddVersionError(e.to_string()));
                     }
@@ -86,7 +98,7 @@ impl RepoRepl {
 
             }
             Err(e) => {
-                self.feedback = Some(e.to_string());
+                self.feedback = Some(Err(e.to_string()));
                 return Err(VersionitisError::AddVersionError(e.to_string()));
             }
         }
@@ -103,19 +115,19 @@ impl RepoRepl {
             Ok(_) => {
                 input.pop();
                 if !Path::new(&input).exists() {
-                    self.feedback = Some(format!("path:'{}' does not exist on disk", input));
+                    self.feedback = Some(Err(format!("path:'{}' does not exist on disk", input)));
                     return Err(VersionitisError::NonExtantFileError(format!("path:'{}' doesn't exist", input)));
                 }
-                println!("loading {}", input);
+                self.feedback = Some(Ok(format!("loaded: {}", input)));
                 let f = std::fs::File::open(input)?;
                 let r: Repo = serde_yaml::from_reader(f)?;
                 self.repo = r;
                 Ok(())
             }
-            Err(error) => {self.feedback = Some(error.to_string()); Err(VersionitisError::IoError(error))},
+            Err(error) => {self.feedback = Some(Err(error.to_string())); Err(VersionitisError::IoError(error))},
         }
     }
-    fn write_repo(&self) -> Result<(), VersionitisError> {
+    fn write_repo(&mut self) -> Result<(), VersionitisError> {
         print!("{}[2J", 27 as char);
         print!("\n(output):");
         io::stdout().flush().unwrap();
@@ -123,15 +135,15 @@ impl RepoRepl {
         match io::stdin().read_line(&mut output) {
             Ok(_) => {
                 output.pop();
-                let f = File::create(output)?;
+                let f = File::create(output.as_str())?;
                 let r = serde_yaml::to_writer(f, &self.repo)?;
+                self.feedback=Some(Ok(format!("wrote repo to: {}", output)));
                 Ok(r)
             }
             Err(e) => {
                 Err(VersionitisError::IoError(e))
             }
         }
-
     }
 
     fn handle_results(&mut self, input: &str) -> Result<bool,VersionitisError> {
@@ -144,13 +156,13 @@ impl RepoRepl {
             "l" => {
                 println!("l - load repo from file");
                 match self.load_from_file() {
-                    Err(e) => { println!("Error loading file");}
+                    Err(e) => {}
                     Ok(_) => { }
                 }
             }
 
             "w" => {
-                self.write_repo();
+                self.write_repo()?;
 
             }
 
@@ -158,11 +170,13 @@ impl RepoRepl {
                 self.add_version()?;
 
             }
+
             "q" => {
                 println!("quiting");
                 return Ok(true);
             }
-            _ => {println!("invalid choice: '{}'", input);}
+
+            _ => {self.feedback = Some(Err(format!("invalid choice: '{}'", input)));}
         }
         // we return Ok(false) to indicate that we are not quiting
         Ok(false)
@@ -179,7 +193,7 @@ impl RepoRepl {
                     if let Ok(quitout) = self.handle_results(input.as_str())
                    { if quitout == true { break }};
                 }
-                Err(error) => self.feedback = Some(error.to_string()),
+                Err(error) => self.feedback = Some(Err(error.to_string())),
             }
         }
     }
