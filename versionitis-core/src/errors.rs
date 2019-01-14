@@ -19,6 +19,8 @@ pub enum VersionitisError {
     NonExtantFileError(String),
     #[fail(display="AddVersionError: {}", _0)]
     AddVersionError(String),
+    #[fail(display="DuplicatePackageDependency: {}", _0)]
+    DuplicatePackageDependency(String),
 }
 
 use std::num::ParseIntError;
