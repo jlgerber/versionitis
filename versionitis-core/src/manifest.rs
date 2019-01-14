@@ -28,22 +28,66 @@ impl PackageInterval {
 pub type PackageInterval = Interval<Package>;
 pub type IntervalSet     = HashSet<PackageInterval>;
 
-/// Retrieve the package name from a PackageInterval
-pub fn package_name_for(interval: &PackageInterval) -> String {
-    match *interval {
+impl PackageInterval {
+    /// Retrieve the package name for the PackageInterval as a &str
+    pub fn package_name(&self) -> &str {
+         match *self {
          Interval::Single(ref v) => {
-                v.package().to_string()
+                v.package()
             }
 
             Interval::HalfOpen{ref start, ..} => {
-                start.package().to_string()
+                start.package()
             }
 
             Interval::Open{ref start, ..} => {
-                start.package().to_string()
+                start.package()
             }
+        }
     }
 }
+
+
+/// Construct a package interval from a &str
+///
+/// # example
+///
+/// ```ignore
+/// let interval = single_from_str("foo-0.1.0").unwrap();
+/// ```
+pub fn single_from_str(name: &str) -> Result<Interval<Package>, VersionitisError> {
+    Ok(Interval::Single(Package::from_string(name)?))
+}
+
+/// Construct a half open package interval from two &str
+///
+/// # example
+///
+/// ```ignore
+/// let interval = halfopen_from_strs("foo-0.1.0", "foo-1.0.0").unwrap();
+/// ```
+pub fn halfopen_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, VersionitisError> {
+    Ok(Interval::HalfOpen{
+        start: Package::from_string(p1)?,
+        end: Package::from_string(p2)?
+    })
+}
+
+/// Construct an open package interval from two strings
+///
+/// # example
+///
+/// ```ignore
+/// let interval = open_from_strs("foo-0.1.0", "foo-1.0.0")?;
+/// ```
+pub fn open_from_strs(p1: &str, p2: &str) -> Result<PackageInterval, VersionitisError> {
+    Ok(Interval::Open{
+        start: Package::from_string(p1)?,
+        end: Package::from_string(p2)?
+    })
+}
+
+
 #[derive(Debug,PartialEq,Eq)]
 pub struct Manifest {
     name: String,
@@ -76,9 +120,9 @@ impl Manifest {
     /// ```
     pub fn add_dependency(&mut self, interval: PackageInterval) -> Result<(), VersionitisError> {
 
-        let package_name = package_name_for(&interval);
-        if  self.depends_on(package_name.as_str() ) {
-            return Err(VersionitisError::DuplicatePackageDependency(package_name));
+        let package_name = interval.package_name();//package_name_for(&interval);
+        if  self.depends_on(package_name ) {
+            return Err(VersionitisError::DuplicatePackageDependency(package_name.to_string()));
         }
         self.dependencies.insert(interval);
         Ok(())
@@ -120,45 +164,6 @@ impl Manifest {
         }
         false
     }
-}
-
-/// Construct a package interval from a &str
-///
-/// # example
-///
-/// ```ignore
-/// let interval = single_from_str("foo-0.1.0").unwrap();
-/// ```
-pub fn single_from_str(name: &str) -> Result<Interval<Package>, VersionitisError> {
-    Ok(Interval::Single(Package::from_string(name)?))
-}
-
-/// Construct a half open package interval from two &str
-///
-/// # example
-///
-/// ```ignore
-/// let interval = halfopen_from_strs("foo-0.1.0", "foo-1.0.0").unwrap();
-/// ```
-pub fn halfopen_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, VersionitisError> {
-    Ok(Interval::HalfOpen{
-        start: Package::from_string(p1)?,
-        end: Package::from_string(p2)?
-    })
-}
-
-/// Construct an open package interval from two strings
-///
-/// # example
-///
-/// ```ignore
-/// let interval = open_from_strs("foo-0.1.0", "foo-1.0.0")?;
-/// ```
-pub fn open_from_strs(p1: &str, p2: &str) -> Result<PackageInterval, VersionitisError> {
-    Ok(Interval::Open{
-        start: Package::from_string(p1)?,
-        end: Package::from_string(p2)?
-    })
 }
 
 
