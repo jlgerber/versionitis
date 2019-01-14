@@ -5,5 +5,6 @@ pub mod package_map;
 pub mod package;
 pub mod errors;
 pub mod manifest;
+pub mod repo;
 
-pub use crate::package::repo::Repo;
+pub use crate::repo::Repo;
