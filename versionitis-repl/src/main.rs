@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{self, Write, Read};
 use std::path::Path;
 
+type Feedback = Option<Result<String, String>>;
 
 struct RepoRepl {
     repo: Repo,
@@ -54,7 +55,7 @@ impl RepoRepl {
         self.await_user();
     }
 
-    fn add_version(&mut self) -> bool {
+    fn add_version(&mut self) -> Result<bool, VersionitisError> {
         print!("{}[2J", 27 as char);
         print!("(name-version):");
         io::stdout().flush().unwrap();
@@ -63,24 +64,34 @@ impl RepoRepl {
             Ok(_) => {
                 input.pop(); //remove \n
                 let pieces: Vec<&str> = input.split("-").collect();
-                if pieces.len() != 2 { return false; }
+                if pieces.len() != 2 {
+                    return Err(
+                        VersionitisError::AddVersionError(
+                            format!("malformed package name: {}", input)
+                        )
+                    );
+                }
+
                 match self.repo.add_version(pieces[0], pieces[1]) {
                     Ok(_) => {
                         println!("added {}", input);
                         self.await_user();
                     }
                     Err(e) => {
-                        println!("ERROR: {:?}", e);
-                        self.await_user();
-                        return false;
+                        self.feedback = Some(e.to_string());
+                        //self.await_user();
+                        return Err(VersionitisError::AddVersionError(e.to_string()));
                     }
                 };
 
             }
-            _ => {}
+            Err(e) => {
+                self.feedback = Some(e.to_string());
+                return Err(VersionitisError::AddVersionError(e.to_string()));
+            }
         }
 
-        true
+        Ok(true)
     }
 
     fn load_from_file(&mut self) -> Result<(),versionitis::errors::VersionitisError> {
@@ -123,24 +134,38 @@ impl RepoRepl {
 
     }
 
-    fn handle_results(&mut self, input: &str) -> bool {
+    fn handle_results(&mut self, input: &str) -> Result<bool,VersionitisError> {
         match input {
-            "d" => {self.display_repo();}
-            "l" => {println!("l - load repo from file");
+
+            "d" => {
+                self.display_repo();
+            }
+
+            "l" => {
+                println!("l - load repo from file");
                 match self.load_from_file() {
                     Err(e) => { println!("Error loading file");}
-                    Ok(_) => {}
+                    Ok(_) => { }
                 }
             }
-            "w" => {self.write_repo();}
-            "v" => {self.add_version();}
+
+            "w" => {
+                self.write_repo();
+
+            }
+
+            "v" => {
+                self.add_version()?;
+
+            }
             "q" => {
                 println!("quiting");
-                return true;
+                return Ok(true);
             }
             _ => {println!("invalid choice: '{}'", input);}
         }
-        false
+        // we return Ok(false) to indicate that we are not quiting
+        Ok(false)
     }
 
     fn run(&mut self) {
@@ -151,7 +176,8 @@ impl RepoRepl {
             match io::stdin().read_line(&mut input) {
                 Ok(_) => {
                     input.pop();
-                    if self.handle_results(input.as_str()) { break };
+                    if let Ok(quitout) = self.handle_results(input.as_str())
+                   { if quitout == true { break }};
                 }
                 Err(error) => self.feedback = Some(error.to_string()),
             }
