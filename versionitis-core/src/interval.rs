@@ -1,6 +1,12 @@
-use std::fmt::Debug;
-use std::hash::Hash;
-/// Define an Interval
+//! interval.rs
+//!
+//! Define an enum which represents an interval of
+//! generic type T.
+use std::{ fmt::Debug, hash::Hash };
+
+/// Define an Interval enum which may be a Single value, HalfOpen, or Open.
+/// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
+/// and upper bounds are inclusive.
 #[derive(Debug,PartialEq,Eq,Hash)]
 pub enum Interval<T: Eq+Ord+Debug+Hash> {
     Single(T),
@@ -9,7 +15,8 @@ pub enum Interval<T: Eq+Ord+Debug+Hash> {
 }
 
 impl<T: Eq+Ord+Debug+Hash> Interval<T> {
-
+    /// Test whether a the Interval contains a specific
+    /// value T.
     pub fn contains(&self, value:&T) -> bool {
         match *self {
             Interval::Single(ref v) => {

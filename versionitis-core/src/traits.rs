@@ -1,8 +1,11 @@
+//! traits.rs
+//!
+//! Define all traits for versionitis-core
+use core::str::FromStr;
 use std::{
     fmt::Debug,
     error::Error,
 };
-use core::str::FromStr;
 
 /// Trait for defining a version scheme
 pub trait Versionable: Eq + Ord + Debug + ToString + FromStr {}

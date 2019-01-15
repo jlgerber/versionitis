@@ -1,12 +1,11 @@
 pub mod interval;
 
-use std::fmt;
-//use core::str::FromStr;
 use crate::version_number::VersionNumber;
 use serde_derive::{Deserialize,Serialize};
-use std::hash::Hash;
+use std::{ fmt, hash::Hash };
 
-/// Package implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
+/// Package implements Versionable trait. A VersionNumber may be comprised
+/// of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize,Hash)]
 pub struct Package {
     pub name: String,
@@ -20,11 +19,12 @@ impl fmt::Debug for Package {
 }
 
 impl Package {
-    /// extract the package name as a &str
+    /// Extract the package name as a &str
     pub fn package(&self) -> &str {
         self.name.as_str()
     }
 
+    /// Get the full name, in the form of "name-version", as a String
     pub fn name(&self) -> String {
         format!("{}-{}", self.name, self.version.to_string())
     }
@@ -37,13 +37,15 @@ impl Package {
         }
     }
 
-    /// construct a Package with 3 u16 values
+    /// Construct a Package from a package name and three u16 values,
+    /// following the semver spec.
     pub fn semver(name: &str, major: u16, minor: u16, micro: u16) -> Self {
         let value =  VersionNumber::new(vec![major, minor, micro]);
         Self::new(name, value)
     }
 
-    /// construct a semver4 from a value
+    /// Construct a Package from a package name, and four u16 values, following
+    /// the semver spec, plus a patch version to allow for context and manifest changes.
     pub fn semver4(name: &str, major: u16, minor: u16, micro: u16, patch: u16) -> Self {
         let value = VersionNumber::new(vec![major, minor, micro, patch]);
         Self::new(name, value)

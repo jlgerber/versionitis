@@ -1,3 +1,8 @@
+//! errors.rs
+//!
+//! Define an implementation of the Fail trait defined
+//! in the Failure crate for the project.
+
 use failure::Fail;
 use std::fmt::Debug;
 

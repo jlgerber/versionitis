@@ -2,20 +2,20 @@
 //!
 //! map package versions to 1 based id, for use with SAT solver.
 //!
+use crate::package::owned::Package;
 use std::collections::HashMap;
-type IdxType = i32;
 
+type IdxType = i32;
 type PMap = HashMap<String, IdxType>;
 
-use crate::package::owned::Package;
-
+/// Store packages in a SAT friendly structure
 pub struct PackageMap {
     arena: Vec<Package>,
     map: PMap
 }
 
 impl PackageMap {
-
+    /// New up an empty PackageMap
     pub fn new() -> Self {
         Self {
             arena: Vec::new(),
@@ -32,6 +32,8 @@ impl PackageMap {
         }
     }
 
+    /// Given a package version str, determine whether the package map
+    /// contains the package version.
     pub fn has(&self, version_str: &str) -> bool {
         self.map.contains_key(version_str)
     }

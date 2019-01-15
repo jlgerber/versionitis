@@ -2,11 +2,13 @@
 //!
 //! stores package dependencies
 //!
-use crate::interval::Interval;
+use crate::{
+    errors::VersionitisError,
+    interval::Interval,
+    package::owned::Package,
+    version_number::VersionNumber,
+};
 use std::collections::HashSet;
-use crate::version_number::VersionNumber;
-use crate::package::owned::Package;
-use crate::errors::VersionitisError;
 
 pub type PackageInterval = Interval<Package>;
 pub type IntervalSet     = HashSet<PackageInterval>;
