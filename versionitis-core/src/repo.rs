@@ -163,11 +163,11 @@ unchecked: false"#;
     fn setup_repo(package_name: &str) -> Repo {
         let mut repo = Repo::new();
 
-        repo.add_version(package_name, "0.1.0");
-        repo.add_version(package_name, "0.2.0");
-        repo.add_version(package_name, "0.2.1");
-        repo.add_version(package_name, "0.2.3");
-        repo.add_version(package_name, "0.3.0");
+        repo.add_version(package_name, "0.1.0").unwrap();
+        repo.add_version(package_name, "0.2.0").unwrap();
+        repo.add_version(package_name, "0.2.1").unwrap();
+        repo.add_version(package_name, "0.2.3").unwrap();
+        repo.add_version(package_name, "0.3.0").unwrap();
 
         repo
     }
@@ -241,14 +241,14 @@ unchecked: false"#;
         let mut repo = Repo::new();
         let package_name = "fred";
         // make a mess
-        repo.add_version_unchecked(package_name, "0.2.0");
-        repo.add_version_unchecked(package_name, "0.1.0");
+        repo.add_version_unchecked(package_name, "0.2.0").unwrap();
+        repo.add_version_unchecked(package_name, "0.1.0").unwrap();
         // duplicate insert
-        repo.add_version_unchecked(package_name, "0.1.0");
-        repo.add_version_unchecked(package_name, "0.2.1");
-        repo.add_version_unchecked(package_name, "0.3.0");
+        repo.add_version_unchecked(package_name, "0.1.0").unwrap();
+        repo.add_version_unchecked(package_name, "0.2.1").unwrap();
+        repo.add_version_unchecked(package_name, "0.3.0").unwrap();
         // out of order insert
-        repo.add_version_unchecked(package_name, "0.2.3");
+        repo.add_version_unchecked(package_name, "0.2.3").unwrap();
         // clean up
         repo.dedup_sort();
 

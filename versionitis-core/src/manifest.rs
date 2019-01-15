@@ -6,30 +6,21 @@ use crate::interval::Interval;
 use std::collections::HashSet;
 use crate::version_number::VersionNumber;
 use crate::package::owned::Package;
-//use crate::package::owned;
 use crate::errors::VersionitisError;
-
-/*
-pub struct PackageInterval {
-    name: String,
-    interval: Interval<VersionNumber>,
-}
-
-impl PackageInterval {
-    pub fn new<I> (name: I, interval: Interval) -> Self where I: Into<String> {
-        Self {
-            name.into(),
-            interval
-        }
-    }
-}
-*/
 
 pub type PackageInterval = Interval<Package>;
 pub type IntervalSet     = HashSet<PackageInterval>;
 
+/// Enum wrapping possible inputs to from_src
+pub enum PISrc<'a> {
+    Single(&'a str),
+    HalfOpen(&'a str, &'a str),
+    Open(&'a str, &'a str)
+}
+
 impl PackageInterval {
-    /// Retrieve the package name for the PackageInterval as a &str
+
+    /// Retrieve the package name for the PackageInterval as a &str.
     pub fn package_name(&self) -> &str {
          match *self {
          Interval::Single(ref v) => {
@@ -45,46 +36,43 @@ impl PackageInterval {
             }
         }
     }
-}
 
+    /// Constructs a PackageInterval from a Src enum reference.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let package_interval = PackageInterval::from_src(&PISrc::Open("foo-0.1.0", "foo-1.0.0"))?;
+    /// ```
+    ///
+    /// One may wish to make this more ergonomic though:
+    ///
+    /// ```ignore
+    /// type PI = PackageInterval;
+    /// use self::PISrc::Open;
+    /// let package_interval = PI::from_src(&Open("foo-0.1.0", "foo-1.0.0"))?;
+    /// ```
+    pub fn from_src(input: &PISrc) -> Result<PackageInterval, VersionitisError> {
+        match *input {
+            PISrc::Single(ref name) => {
+                Ok(Interval::Single(Package::from_string(name)?))
+            }
 
-/// Construct a package interval from a &str
-///
-/// # example
-///
-/// ```ignore
-/// let interval = single_from_str("foo-0.1.0").unwrap();
-/// ```
-pub fn single_from_str(name: &str) -> Result<Interval<Package>, VersionitisError> {
-    Ok(Interval::Single(Package::from_string(name)?))
-}
+            PISrc::HalfOpen(ref p1, ref p2) => {
+                Ok(Interval::HalfOpen{
+                    start: Package::from_string(p1)?,
+                    end: Package::from_string(p2)?
+                })
+            }
 
-/// Construct a half open package interval from two &str
-///
-/// # example
-///
-/// ```ignore
-/// let interval = halfopen_from_strs("foo-0.1.0", "foo-1.0.0").unwrap();
-/// ```
-pub fn halfopen_from_strs(p1: &str, p2: &str) -> Result<Interval<Package>, VersionitisError> {
-    Ok(Interval::HalfOpen{
-        start: Package::from_string(p1)?,
-        end: Package::from_string(p2)?
-    })
-}
-
-/// Construct an open package interval from two strings
-///
-/// # example
-///
-/// ```ignore
-/// let interval = open_from_strs("foo-0.1.0", "foo-1.0.0")?;
-/// ```
-pub fn open_from_strs(p1: &str, p2: &str) -> Result<PackageInterval, VersionitisError> {
-    Ok(Interval::Open{
-        start: Package::from_string(p1)?,
-        end: Package::from_string(p2)?
-    })
+            PISrc::Open(ref p1, ref p2) => {
+                Ok(Interval::Open{
+                    start: Package::from_string(p1)?,
+                    end: Package::from_string(p2)?
+                })
+            }
+        }
+    }
 }
 
 
@@ -188,21 +176,37 @@ mod tests {
 
         #[test]
         fn add_dependencies() {
+            type PI=PackageInterval;
+            use self::PISrc::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = single_from_str("foo-0.1.0").unwrap();
-            let interval2 = halfopen_from_strs("bar-0.1.0", "bar-1.0.0").unwrap();
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
             assert_eq!(manifest.dependencies.len(), 2);
         }
 
+        #[test]
+        fn add_dependencies_src() {
+            // make this a bit more ergonomic to type
+            type PI=PackageInterval;
+            use self::PISrc::*;
+            let mut manifest = Manifest::new("fred-1.0.0");
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            manifest.add_dependency(interval1).unwrap();
+            manifest.add_dependency(interval2).unwrap();
+            assert_eq!(manifest.dependencies.len(), 2);
+        }
 
         #[test]
         fn cannot_add_duplicate_dependency() {
+            type PI=PackageInterval;
+            use self::PISrc::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = single_from_str("foo-0.1.0").unwrap();
-            let interval2 = halfopen_from_strs("bar-0.1.0", "bar-1.0.0").unwrap();
-            let interval3 = open_from_strs("bar-1.1.0", "bar-2.0.0").unwrap();
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            let interval3 = PI::from_src(&Open("bar-1.1.0", "bar-2.0.0")).unwrap();
 
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
@@ -212,10 +216,12 @@ mod tests {
 
         #[test]
         fn depends_on() {
+            type PI=PackageInterval;
+            use self::PISrc::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = single_from_str("foo-0.1.0").unwrap();
-            let interval2 = halfopen_from_strs("bar-0.1.0", "bar-1.0.0").unwrap();
-            let interval3 = open_from_strs("bla-0.1.0", "bla-1.0.0").unwrap();
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            let interval3 = PI::from_src(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
             manifest.add_dependency(interval3).unwrap();
@@ -230,10 +236,12 @@ mod tests {
             let pfs = |n: &str| {
                 Package::from_string(n).unwrap()
             };
+            type PI=PackageInterval;
+            use self::PISrc::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = single_from_str("foo-0.1.0").unwrap();
-            let interval2 = halfopen_from_strs("bar-0.1.0", "bar-1.0.0").unwrap();
-            let interval3 = open_from_strs("bla-0.1.0", "bla-1.0.0").unwrap();
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            let interval3 = PI::from_src(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
             manifest.add_dependency(interval3).unwrap();

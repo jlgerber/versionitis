@@ -1,3 +1,5 @@
+pub mod interval;
+
 use std::fmt;
 //use core::str::FromStr;
 use crate::version_number::VersionNumber;

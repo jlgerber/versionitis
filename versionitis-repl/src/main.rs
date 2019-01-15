@@ -2,7 +2,7 @@ use versionitis::Repo;
 use versionitis::traits::TrackPackages;
 use versionitis::errors::VersionitisError;
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self, Write,};
 use std::path::Path;
 
 type Feedback = Option<Result<String, String>>;
@@ -25,7 +25,6 @@ impl RepoRepl {
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
-        let mut inp: [u8;1] = [0];
         match io::stdin().read_line(&mut input) {
             _ => {}
         }
@@ -112,7 +111,7 @@ impl RepoRepl {
         println!("========");
         println!("Packages");
         println!("========\n");
-        let mut packs = self.repo.packages.iter().map(|(k,v)| k.to_string()).collect::<Vec<String>>();
+        let mut packs = self.repo.packages.iter().map(|(k,_)| k.to_string()).collect::<Vec<String>>();
         packs.sort();
 
         for package in &packs {
@@ -178,10 +177,7 @@ impl RepoRepl {
 
             "r" => {
                 println!("r - fead repo from file");
-                match self.load_from_file() {
-                    Err(e) => {}
-                    Ok(_) => { }
-                }
+                self.load_from_file()?;
             }
 
             "w" => {
