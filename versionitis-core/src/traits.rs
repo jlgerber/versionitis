@@ -4,7 +4,7 @@
 use core::str::FromStr;
 use std::{
     fmt::Debug,
-    error::Error,
+    //error::Error,
 };
 
 /// Trait for defining a version scheme

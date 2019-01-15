@@ -6,7 +6,7 @@ use crate::{
     errors::VersionitisError,
     interval::Interval,
     package::owned::Package,
-    version_number::VersionNumber,
+    //version_number::VersionNumber,
 };
 use std::collections::HashSet;
 
@@ -128,11 +128,11 @@ impl Manifest {
                 }
                 // shouldn't need to test both start and end since
                 // the package name should be guaranteed to be the same
-                Interval::HalfOpen{ref start, ref end} => {
+                Interval::HalfOpen{ref start, ..} => {
                     name == start.package()
                 }
 
-                Interval::Open{ref start, ref end} => {
+                Interval::Open{ref start, ..} => {
                     name == start.package()
                 }
             };

@@ -2,7 +2,7 @@ pub mod interval;
 
 use crate::version_number::VersionNumber;
 use serde_derive::{Deserialize,Serialize};
-use std::{ fmt, hash::Hash };
+use std::{ fmt, /*hash::Hash*/ };
 
 /// Package implements Versionable trait. A VersionNumber may be comprised
 /// of one or more u16 digits

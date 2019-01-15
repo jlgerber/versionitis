@@ -1,6 +1,6 @@
 use crate::errors::VersionitisError;
 use serde_derive::{ Deserialize, Serialize };
-use std::{ fmt, hash::Hash, };
+use std::{ fmt, /*hash::Hash,*/ };
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq,PartialOrd,Eq,Ord,Deserialize,Serialize,Hash)]

@@ -4,7 +4,7 @@
 //! in the Failure crate for the project.
 
 use failure::Fail;
-use std::fmt::Debug;
+//use std::fmt::Debug;
 
 /// The primary error class for Versionitis, it leverages the
 /// ever popular Failure crate.

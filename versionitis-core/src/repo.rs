@@ -2,7 +2,6 @@
 //!
 //! Store and retrieve package versions. The repo is intended to
 //! hold the available packages in memory.
-
 use crate::{
     errors::VersionitisError,
     package::owned::Package,
