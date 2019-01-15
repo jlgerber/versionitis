@@ -77,7 +77,8 @@ impl PackageInterval {
     }
 }
 
-
+/// A manifest stores a set of dependencies for a named package.
+/// The dependencies are modeled as a HashSet<Interval<Package>>.
 #[derive(Debug,PartialEq,Eq)]
 pub struct Manifest {
     name: String,
