@@ -15,6 +15,23 @@ impl fmt::Debug for VersionNumber {
     }
 }
 
+impl fmt::Display for VersionNumber {
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let last = self.value.len()-1;
+        let mut err = None;
+        self.value.iter().enumerate().for_each(|(cnt,val)|{
+            let end = if cnt == last {""} else {"."};
+            let r = write!(f, "{}{}", val, end);
+            if r.is_err() { err = Some(r) };
+        });
+        match err {
+            None => Ok(()),
+            Some(err) => err,
+        }
+    }
+}
+
 impl VersionNumber {
 
     fn construct_name(value: &Vec<u16>) -> String {
@@ -55,12 +72,6 @@ impl VersionNumber {
     }
 }
 
-impl ToString for VersionNumber {
-    fn to_string(&self) -> String {
-        self.value.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".")
-    }
-}
-
 #[macro_export]
 macro_rules! vernum {
     ($e:expr) => {
@@ -73,6 +84,13 @@ macro_rules! vernum {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn implements_display_trait() {
+        let v  = VersionNumber::semver(0,1,0);
+        let vs = format!("{}",v);
+        assert_eq!(vs, "0.1.0".to_string());
+    }
 
     #[test]
     fn macrotest() {

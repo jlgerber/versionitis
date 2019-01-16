@@ -2,7 +2,7 @@ pub mod interval;
 
 use crate::version_number::VersionNumber;
 use serde_derive::{Deserialize,Serialize};
-use std::{ fmt, /*hash::Hash*/ };
+use std::{ fmt,  /*hash::Hash*/ };
 
 /// Package implements Versionable trait. A VersionNumber may be comprised
 /// of one or more u16 digits
@@ -17,6 +17,13 @@ impl fmt::Debug for Package {
         write!(f, "{}-{}", self.name, self.version.to_string())
     }
 }
+
+impl fmt::Display for Package {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}-{}", self.name, self.version)
+    }
+}
+
 
 impl Package {
     /// Extract the package name as a &str
@@ -78,12 +85,6 @@ impl Package {
     }
 }
 
-impl ToString for Package {
-    fn to_string(&self) -> String {
-       self.name()
-    }
-}
-
 #[macro_export]
 macro_rules! version {
     ($e:expr) => {
@@ -96,6 +97,13 @@ macro_rules! version {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn package_implements_display_trait() {
+        let p  = Package::from_string("foo-0.1.0").unwrap();
+        let pd = format!("{}",p);
+        assert_eq!(pd, "foo-0.1.0".to_string());
+    }
 
     #[test]
     fn macrotest() {
