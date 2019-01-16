@@ -9,6 +9,7 @@ failure = "0.1.5"
 serde = "1.0.84"
 serde_derive = "1.0.84"
 serde_yaml = "0.8.8"
+typed-arena = "1.4.1"
 
 [dev-dependencies]
 batsat = "0.3"

@@ -4,26 +4,112 @@
 //! hold the available packages in memory.
 use crate::{
     errors::VersionitisError,
-    package::owned::Package,
+    package::reference::Package,
     traits::TrackPackages,
 };
+
 use serde_derive::{Deserialize,Serialize};
 use std::{
     collections::HashMap,
     iter::Iterator,
 };
 
+//! test of using an arena for managing info
+use typed_arena::Arena;
+
+pub type StringArena = Arena<String>;
+pub type Map<'a> = HashMap<&'a str, Package<'a>>;
+
+pub struct PackMap<'a, 'b: 'a> {
+    arena: &'b StringArena,
+    map: Map<'a>,
+}
+
+impl<'a, 'b> PackMap<'a, 'b> {
+
+    fn new(arena: &'b StringArena) -> Self {
+        Self {
+            arena, //StringArena::new(),
+            map: Map::new(),
+        }
+    }
+
+    pub fn add< I: Into<String>>(&mut self, package: I) {
+        let v1: &'b str = self.arena.alloc(package.into());
+        let p1 = PackageVersion::new(v1);
+        self.map.insert(v1, p1);
+    }
+
+    pub fn get(&self, name: &str) -> Option<&PackageVersion<'a>> {
+        self.map.get(name)
+    }
+}
+
+
+// pub struct PackageVersion<'a> {
+//     item: &'a str,
+// }
+
+
+// impl<'a> PackageVersion<'a> {
+//     pub fn name(&self) -> &str {
+//         let pieces: Vec<&'a str> = self.item.split("-").collect();
+//         pieces[0]
+//     }
+
+//     pub fn version(&self) -> &str {
+//         let pieces: Vec<&'a str> = self.item.split("-").collect();
+//         pieces[1]
+//     }
+
+//     pub fn fullname(&self) -> &str {
+//      self.item
+//     }
+//     pub fn new<'b: 'a>(item: &'b str) -> Self {
+//         Self {
+//             item
+//         }
+//     }
+
+// }
+
+pub fn test3() {
+    let arena = StringArena::new();
+    let mut map = Map::new();
+    let v1 = arena.alloc("foo-0.1.0".into());
+    let val1 = PackageVersion::new(v1) ;
+    let v2 = arena.alloc("foo-0.2.0".into());
+    let val2 = PackageVersion::new(v1) ;
+
+    map.insert(v1, val1);
+    map.insert(v2, val2);
+
+    let v = map.get("foo-0.2.0").unwrap();
+    println!("fullname:{} base:{} version:{}", v.fullname(), v.name(), v.version());
+
+    let arena = StringArena::new();
+    let mut pm = PackMap::new(&arena);
+    pm.add("foo-1.0.0");
+    pm.add("foo-2.0.0");
+    let p = pm.get("foo-2.0.0").unwrap();
+    println!("fullname: {}", p.fullname());
+}
+
+
+
+
+
 // type alias
-type PackageMap = HashMap<String, Vec<Package>>;
+type PackageMap<'a, 'b: 'a> = HashMap<&'a str, Vec<Package<'b>>>;
 
 /// The Repo stores package versions for each package
 #[derive(Debug,PartialEq,Eq,Deserialize,Serialize)]
-pub struct Repo {
-    pub packages: PackageMap,
+pub struct<'a, 'b: 'a> Repo<'a, 'b> {
+    pub packages: PackageMap<'a, 'b>,
     unchecked: bool, // have we called add_version_nocheck
 }
 
-impl Repo {
+impl<'a, 'b> Repo<'a, 'b> {
     /// create a new package repository.
     pub fn new() -> Self {
         Self {
@@ -47,15 +133,15 @@ impl Repo {
     /// Add version but do not bother to check for duplicates / monotonic
     /// increase. IFF you are going to add a bunch of versions in arbitary
     /// order then use add_version_nocheck and call dedup_sort afterwards
-    pub fn add_version_unchecked(&mut self, package_name: &str, version: &str)
+    pub fn add_version_unchecked(&mut self, package: &str)
     -> Result<(), VersionitisError> {
         self.add_version_imp(package_name, version, false)
     }
 
     /// Implementation for add_version and add_version_nocheck
-    fn add_version_imp(&mut self, package_name: &str, version: &str, check: bool)
+    fn add_version_imp(&mut self, package_name: &'a str, check: bool)
     -> Result<(), VersionitisError> {
-        let pack = Package::from_strs(package_name, version)?;
+        let pack = Package::from_str(package_name)?;
         // retrieve the vector of package versions for the supplied
         // package name. If it exists, verify that the new package's
         // version is greater than the version of the last package in
@@ -82,7 +168,7 @@ impl Repo {
             _ => {
                 // the package key does not exist. Create it and add a vec
                 // value which has the new versioned package.
-                self.packages.insert(package_name.to_string(), vec![pack]);
+                self.packages.insert(package_name, vec![pack]);
                 Ok(())
             },
         }
