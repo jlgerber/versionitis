@@ -103,6 +103,10 @@ impl Manifest {
         }
     }
 
+    /// return the name the package
+    pub fn package(&self) -> &str {
+        return self.name.as_str()
+    }
     /// Add a dependency to the manifest
     ///
     /// # example
@@ -172,6 +176,22 @@ mod tests {
         fn can_construct() {
             let manifest = Manifest::new("fred-1.0.0");
         }
+
+
+        #[test]
+        fn get_package_name() {
+            type PI=PackageInterval;
+            use self::PISrc::*;
+            let mut manifest = Manifest::new("fred-1.0.0");
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            manifest.add_dependency(interval1).unwrap();
+            manifest.add_dependency(interval2).unwrap();
+
+            let name = manifest.package();
+            assert_eq!(name, "fred-1.0.0");
+        }
+
 
         #[test]
         fn add_dependencies() {
