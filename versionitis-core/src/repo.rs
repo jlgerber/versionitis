@@ -129,34 +129,29 @@ packages:
   fred:
     - name: fred
       version:
-        value:
-          - 0
-          - 1
-          - 0
+        - 0
+        - 1
+        - 0
     - name: fred
       version:
-        value:
-          - 0
-          - 2
-          - 0
+        - 0
+        - 2
+        - 0
     - name: fred
       version:
-        value:
-          - 0
-          - 2
-          - 1
+        - 0
+        - 2
+        - 1
     - name: fred
       version:
-        value:
-          - 0
-          - 2
-          - 3
+        - 0
+        - 2
+        - 3
     - name: fred
       version:
-        value:
-          - 0
-          - 3
-          - 0
+        - 0
+        - 3
+        - 0
 unchecked: false"#;
 
     fn setup_repo(package_name: &str) -> Repo {

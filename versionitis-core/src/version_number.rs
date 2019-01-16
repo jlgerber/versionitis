@@ -4,13 +4,12 @@ use std::{ fmt, /*hash::Hash,*/ };
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq,PartialOrd,Eq,Ord,Deserialize,Serialize,Hash)]
-pub struct VersionNumber { //todo: use tuple struct instead of struct
-    value: Vec<u16>,
-}
+pub struct VersionNumber ( Vec<u16> );
+
 
 impl fmt::Debug for VersionNumber {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = self.value.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".");
+        let name = self.0.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".");
         write!(f, "{}", name)
     }
 }
@@ -18,9 +17,9 @@ impl fmt::Debug for VersionNumber {
 impl fmt::Display for VersionNumber {
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let last = self.value.len()-1;
+        let last = self.0.len()-1;
         let mut err = None;
-        self.value.iter().enumerate().for_each(|(cnt,val)|{
+        self.0.iter().enumerate().for_each(|(cnt,val)|{
             let end = if cnt == last {""} else {"."};
             let r = write!(f, "{}{}", val, end);
             if r.is_err() { err = Some(r) };
@@ -41,9 +40,11 @@ impl VersionNumber {
 
     /// Construct a VersionNumber from a vector of u16
     pub fn new(input: Vec<u16>) -> Self {
-        Self {
-            value: input
-        }
+        VersionNumber(input)
+    }
+
+    pub fn value(&self) -> Vec<u16> {
+        self.0.clone()
     }
 
     /// construct a VersionNumber with 3 u16 values
