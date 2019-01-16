@@ -11,9 +11,6 @@ use crate::{
 use serde_derive::{Deserialize,Serialize};
 use std::collections::HashSet;
 
-pub type PackageInterval = Interval<Package>;
-pub type IntervalSet     = HashSet<PackageInterval>;
-
 /// Enum wrapping possible inputs to from_src
 #[derive(Debug,PartialEq,Eq,Serialize,Deserialize)]
 pub enum PISrc<'a> {
@@ -22,12 +19,16 @@ pub enum PISrc<'a> {
     Open(&'a str, &'a str)
 }
 
+
+pub type PackageInterval = Interval<Package>;
+pub type IntervalSet     = HashSet<PackageInterval>;
+
 impl PackageInterval {
 
     /// Retrieve the package name for the PackageInterval as a &str.
     pub fn package_name(&self) -> &str {
          match *self {
-         Interval::Single(ref v) => {
+            Interval::Single(ref v) => {
                 v.package()
             }
 
@@ -59,20 +60,20 @@ impl PackageInterval {
     pub fn from_src(input: &PISrc) -> Result<PackageInterval, VersionitisError> {
         match *input {
             PISrc::Single(ref name) => {
-                Ok(Interval::Single(Package::from_string(name)?))
+                Ok(Interval::Single(Package::from_str(name)?))
             }
 
             PISrc::HalfOpen(ref p1, ref p2) => {
                 Ok(Interval::HalfOpen{
-                    start: Package::from_string(p1)?,
-                    end: Package::from_string(p2)?
+                    start: Package::from_str(p1)?,
+                    end: Package::from_str(p2)?
                 })
             }
 
             PISrc::Open(ref p1, ref p2) => {
                 Ok(Interval::Open{
-                    start: Package::from_string(p1)?,
-                    end: Package::from_string(p2)?
+                    start: Package::from_str(p1)?,
+                    end: Package::from_str(p2)?
                 })
             }
         }
@@ -163,13 +164,6 @@ impl Manifest {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // mod interval {
-    //     use super::*;
-    //     #[test]
-    //     fn can_construct() {
-    //         let pinter = PackageInterval::new("foo", Un);
-    //     }
-    // }
 
     mod manifest {
         use super::*;
@@ -239,7 +233,7 @@ mod tests {
         #[test]
         fn depends_on_package() {
             let pfs = |n: &str| {
-                Package::from_string(n).unwrap()
+                Package::from_str(n).unwrap()
             };
             type PI=PackageInterval;
             use self::PISrc::*;

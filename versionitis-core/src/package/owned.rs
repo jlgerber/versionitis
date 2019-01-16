@@ -59,7 +59,7 @@ impl Package {
     }
 
     /// Not the FromString trait because of lifetime requirements
-    pub fn  from_string(s: &str) -> Result<Self, crate::errors::VersionitisError> {
+    pub fn  from_str(s: &str) -> Result<Self, crate::errors::VersionitisError> {
         // todo support variants
         let pieces: Vec<&str> = s.split("-").collect();
         let mut result: Vec<u16> = Vec::new();
@@ -88,7 +88,7 @@ impl Package {
 #[macro_export]
 macro_rules! version {
     ($e:expr) => {
-        Package::from_string(
+        Package::from_str(
         stringify!($e).chars().filter(|x| *x != ' ').collect::<String>().as_str()
         )
     }
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn package_implements_display_trait() {
-        let p  = Package::from_string("foo-0.1.0").unwrap();
+        let p  = Package::from_str("foo-0.1.0").unwrap();
         let pd = format!("{}",p);
         assert_eq!(pd, "foo-0.1.0".to_string());
     }
@@ -108,14 +108,14 @@ mod tests {
     #[test]
     fn macrotest() {
         let sv1 = version!( foo-0.1.0 ) ;
-        let sv2 = Package::from_string("foo-0.1.0");
+        let sv2 = Package::from_str("foo-0.1.0");
         assert_eq!(sv1, sv2);
     }
 
     #[test]
     fn base() {
         let package = String::from("fred-0.1.0.1");
-        let sv1 = Package::from_string(&package).unwrap();
+        let sv1 = Package::from_str(&package).unwrap();
         assert_eq!(sv1.package(), "fred");
     }
 
@@ -204,7 +204,7 @@ mod tests {
     fn from_str() {
         let name = String::from("fred");
         let package = String::from("fred-0.1.0.1");
-        let sv1 = Package::from_string(&package).unwrap();
+        let sv1 = Package::from_str(&package).unwrap();
         let sv2 = Package::semver4(&name, 0,1,0,1);
         assert_eq!(sv1, sv2 );
     }

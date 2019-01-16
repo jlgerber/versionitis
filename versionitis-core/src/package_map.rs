@@ -42,7 +42,7 @@ impl PackageMap {
     /// and add it into the PackageMap
     pub fn add_str(&mut self, vs: &str) {
         // todo: deal with error
-        let version_num = Package::from_string(vs).unwrap();
+        let version_num = Package::from_str(vs).unwrap();
         self.add(version_num);
     }
 
@@ -79,7 +79,7 @@ mod test {
     #[test]
     fn testone() {
         let mut mymap = PackageMap::new();
-        mymap.add(Package::from_string("foo-0.1.0").unwrap());
+        mymap.add(Package::from_str("foo-0.1.0").unwrap());
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
 
@@ -93,7 +93,7 @@ mod test {
     #[test]
     fn can_add_multiple_times() {
         let mut mymap = PackageMap::new();
-        mymap.add(Package::from_string("foo-0.1.0").unwrap());
+        mymap.add(Package::from_str("foo-0.1.0").unwrap());
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
         let idx = mymap.get("foo-0.2.1");
