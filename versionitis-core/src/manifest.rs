@@ -8,12 +8,14 @@ use crate::{
     package::owned::Package,
     //version_number::VersionNumber,
 };
+use serde_derive::{Deserialize,Serialize};
 use std::collections::HashSet;
 
 pub type PackageInterval = Interval<Package>;
 pub type IntervalSet     = HashSet<PackageInterval>;
 
 /// Enum wrapping possible inputs to from_src
+#[derive(Debug,PartialEq,Eq,Serialize,Deserialize)]
 pub enum PISrc<'a> {
     Single(&'a str),
     HalfOpen(&'a str, &'a str),
@@ -79,7 +81,7 @@ impl PackageInterval {
 
 /// A manifest stores a set of dependencies for a named package.
 /// The dependencies are modeled as a HashSet<Interval<Package>>.
-#[derive(Debug,PartialEq,Eq)]
+#[derive(Debug,PartialEq,Eq,Serialize,Deserialize)]
 pub struct Manifest {
     name: String,
     dependencies: IntervalSet,
