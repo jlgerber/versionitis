@@ -42,6 +42,7 @@ impl RepoRepl {
         println!("(r) - read repo from file");
         println!("(w) - write repo to file");
         println!("(v) - add version");
+        println!("(m) - serialize manifest test");
         println!("(q) - quit");
 
         match &self.feedback {
@@ -164,6 +165,22 @@ impl RepoRepl {
         }
     }
 
+    fn serialize_manifest(&self) -> Result<(),VersionitisError>  {
+        use versionitis::manifest::{PISrc::*, PackageInterval, Manifest};
+        type PI=PackageInterval;
+        let mut manifest = Manifest::new("fred-1.0.0");
+        let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+        let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+        let interval3 = PI::from_src(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
+        manifest.add_dependency(interval1).unwrap();
+        manifest.add_dependency(interval2).unwrap();
+        manifest.add_dependency(interval3).unwrap();
+
+        let f = File::create("/tmp/manifest.yaml")?;
+        let r = serde_yaml::to_writer(f, &manifest)?;
+        Ok(())
+    }
+
     fn handle_results(&mut self, input: &str) -> Result<bool, VersionitisError> {
         match input {
 
@@ -188,6 +205,10 @@ impl RepoRepl {
             "v" => {
                 self.add_version()?;
 
+            }
+
+            "m" => {
+                self.serialize_manifest();
             }
 
             "q" => {
