@@ -3,11 +3,12 @@
 //! Define an enum which represents an interval of
 //! generic type T.
 use std::{ fmt::Debug, hash::Hash };
+use serde_derive::{Deserialize,Serialize};
 
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
 /// and upper bounds are inclusive.
-#[derive(Debug,PartialEq,Eq,Hash)]
+#[derive(Debug,PartialEq,Eq,Hash,Serialize,Deserialize)]
 pub enum Interval<T: Eq+Ord+Debug+Hash> {
     Single(T),
     HalfOpen{start:T, end:T},
