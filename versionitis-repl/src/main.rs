@@ -179,7 +179,7 @@ impl RepoRepl {
         manifest.add_dependency(interval3).unwrap();
 
         let f = File::create("/tmp/manifest.yaml")?;
-        let r = serde_yaml::to_writer(f, &manifest)?;
+        serde_yaml::to_writer(f, &manifest)?;
         Ok(())
     }
 
@@ -236,7 +236,12 @@ impl RepoRepl {
             }
 
             "m" => {
-                self.serialize_manifest();
+                match self.serialize_manifest() {
+                    Err(error) => {
+                        self.feedback = Some(Err(error.to_string()));
+                    }
+                    Ok(_) => {}
+                }
 
             }
 

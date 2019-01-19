@@ -1,13 +1,14 @@
-//pub mod interval;
-
+//! owned.rs
+//!
+//! Owned Package implementation. In the owned implementation
+//! the Package owns its fields (eg String instead of &str)
 use crate::version_number::VersionNumber;
-use std::fmt;
-
 use serde::{
     de::{self, Deserializer, Visitor},
     ser::{Serialize, SerializeStruct, Serializer},
     Deserialize,
 };
+use std::fmt;
 
 /// A named entity which is ordered, convertable to and from a
 /// string, hashable, and may of course be debuged.
@@ -24,7 +25,7 @@ impl Serialize for Package {
     {
         let mut state = serializer.serialize_struct("Package", 1)?;
         let value = format!("{}-{}", self.name, self.version);
-        state.serialize_field("package", &value)?;
+        state.serialize_field("spec", &value)?;
         state.end()
     }
 }

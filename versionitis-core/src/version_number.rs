@@ -37,14 +37,15 @@ impl fmt::Display for VersionNumber {
 }
 
 impl VersionNumber {
-    fn construct_name(value: &Vec<u16>) -> String {
-        let version = value
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join(".");
-        format!("{}", version)
-    }
+
+    // fn construct_name(value: &Vec<u16>) -> String {
+    //     let version = value
+    //         .iter()
+    //         .map(|x| x.to_string())
+    //         .collect::<Vec<String>>()
+    //         .join(".");
+    //     format!("{}", version)
+    // }
 
     /// Construct a VersionNumber from a vector of u16
     pub fn new(input: Vec<u16>) -> Self {

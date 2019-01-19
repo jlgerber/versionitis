@@ -2,7 +2,7 @@
 //!
 //! Define an enum which represents an interval of
 //! generic type T.
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::{Deserialize};
 use std::{fmt::Debug, hash::Hash};
 
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.

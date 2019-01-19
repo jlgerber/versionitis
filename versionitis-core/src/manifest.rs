@@ -183,11 +183,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn can_construct() {
-            let manifest = Manifest::new("fred-1.0.0");
-        }
-
-        #[test]
         fn get_package_spec() {
             type PI = PackageInterval;
             use self::PISrc::*;
