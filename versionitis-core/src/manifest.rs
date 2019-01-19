@@ -197,7 +197,7 @@ mod tests {
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
 
-            let name = manifest.name();
+            let name = manifest.package();
             assert_eq!(name, "fred-1.0.0");
         }
 
