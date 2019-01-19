@@ -8,23 +8,23 @@ use failure::Fail;
 
 /// The primary error class for Versionitis, it leverages the
 /// ever popular Failure crate.
-#[derive(Fail, Debug,Eq,PartialEq)]
+#[derive(Fail, Debug, Eq, PartialEq)]
 pub enum VersionitisError {
     #[fail(display = "{}", _0)]
     ParseIntError(#[fail(cause)] std::num::ParseIntError),
-    #[fail(display="InvalidPackageVersion: {}", _0)]
+    #[fail(display = "InvalidPackageVersion: {}", _0)]
     InvalidPackageVersion(String),
-    #[fail(display="UnknownPackage: {}", _0)]
+    #[fail(display = "UnknownPackage: {}", _0)]
     UnknownPackage(String),
-    #[fail(display="{}", _0)]
+    #[fail(display = "{}", _0)]
     SerdeYamlError(String),
-    #[fail(display="IoError: {}", _0)]
+    #[fail(display = "IoError: {}", _0)]
     IoError(String),
-    #[fail(display="NonExtantFile: {}", _0)]
+    #[fail(display = "NonExtantFile: {}", _0)]
     NonExtantFileError(String),
-    #[fail(display="AddVersionError: {}", _0)]
+    #[fail(display = "AddVersionError: {}", _0)]
     AddVersionError(String),
-    #[fail(display="DuplicatePackageDependency: {}", _0)]
+    #[fail(display = "DuplicatePackageDependency: {}", _0)]
     DuplicatePackageDependency(String),
 }
 
