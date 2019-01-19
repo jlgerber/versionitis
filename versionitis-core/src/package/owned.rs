@@ -13,7 +13,7 @@ use serde::{
 /// string, hashable, and may of course be debuged.
 #[derive(PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Package {
-    pub name: String,
+    name: String,
     version: VersionNumber,
 }
 
@@ -72,11 +72,12 @@ impl fmt::Display for Package {
 
 impl Package {
     /// Extract the package name as a &str
-    pub fn package(&self) -> &str {
+    pub fn name(&self) -> &str {
         self.name.as_str()
     }
 
-    /// Get the full specification for a package, in the form of "name-version", as a String
+    /// Get the full specification for a package, in the form of "name-version",
+    /// as a String
     pub fn spec(&self) -> String {
         format!("{}-{}", self.name, self.version.to_string())
     }
@@ -164,7 +165,7 @@ mod tests {
     fn base() {
         let package = String::from("fred-0.1.0.1");
         let sv1 = Package::from_str(&package).unwrap();
-        assert_eq!(sv1.package(), "fred");
+        assert_eq!(sv1.name(), "fred");
     }
 
     #[test]

@@ -51,11 +51,11 @@ impl PackageInterval {
     /// Retrieve the package name for the PackageInterval as a &str.
     pub fn package_name(&self) -> &str {
         match *self {
-            Interval::Single(ref v) => v.package(),
+            Interval::Single(ref v) => v.name(),
 
-            Interval::HalfOpen { ref start, .. } => start.package(),
+            Interval::HalfOpen { ref start, .. } => start.name(),
 
-            Interval::Open { ref start, .. } => start.package(),
+            Interval::Open { ref start, .. } => start.name(),
         }
     }
 
@@ -148,12 +148,12 @@ impl Manifest {
     pub fn depends_on(&self, name: &str) -> bool {
         for dep in &self.dependencies {
             let found = match dep {
-                Interval::Single(ref v) => name == v.package(),
+                Interval::Single(ref v) => name == v.name(),
                 // shouldn't need to test both start and end since
                 // the package name should be guaranteed to be the same
-                Interval::HalfOpen { ref start, .. } => name == start.package(),
+                Interval::HalfOpen { ref start, .. } => name == start.name(),
 
-                Interval::Open { ref start, .. } => name == start.package(),
+                Interval::Open { ref start, .. } => name == start.name(),
             };
             if found {
                 return true;
@@ -197,7 +197,7 @@ mod tests {
             manifest.add_dependency(interval1).unwrap();
             manifest.add_dependency(interval2).unwrap();
 
-            let name = manifest.package();
+            let name = manifest.name();
             assert_eq!(name, "fred-1.0.0");
         }
 

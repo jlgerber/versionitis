@@ -32,7 +32,7 @@ impl Repo {
             v.dedup();
             // TODO: do we need this here? only after deserialization. perhaps
             // i will put it there.
-            v.iter_mut().filter(|x| x.package() == key).for_each(|_| {});
+            v.iter_mut().filter(|x| x.name() == key).for_each(|_| {});
         });
         self.unchecked = false;
     }
