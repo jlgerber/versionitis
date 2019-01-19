@@ -2,34 +2,28 @@
 //!
 //! Define an enum which represents an interval of
 //! generic type T.
-use std::{ fmt::Debug, hash::Hash };
-use serde_derive::{Deserialize,Serialize};
+use serde_derive::{Deserialize, Serialize};
+use std::{fmt::Debug, hash::Hash};
 
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
 /// and upper bounds are inclusive.
-#[derive(Debug,PartialEq,Eq,Hash,/*Serialize,*/Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum Interval<T: Eq+Ord+Debug+Hash> {
+pub enum Interval<T: Eq + Ord + Debug + Hash> {
     Single(T),
-    HalfOpen{start:T, end:T},
-    Open{start:T, end:T},
+    HalfOpen { start: T, end: T },
+    Open { start: T, end: T },
 }
 
-impl<T: Eq+Ord+Debug+Hash> Interval<T> {
+impl<T: Eq + Ord + Debug + Hash> Interval<T> {
     /// Test whether a the Interval contains a specific
     /// value T.
-    pub fn contains(&self, value:&T) -> bool {
+    pub fn contains(&self, value: &T) -> bool {
         match *self {
-            Interval::Single(ref v) => {
-                value == v
-            }
-            Interval::HalfOpen{ref start, ref end} => {
-                value >= start && value < end
-            }
-            Interval::Open{ref start, ref end} => {
-                value >= start && value <= end
-            }
+            Interval::Single(ref v) => value == v,
+            Interval::HalfOpen { ref start, ref end } => value >= start && value < end,
+            Interval::Open { ref start, ref end } => value >= start && value <= end,
         }
     }
 }
@@ -39,8 +33,8 @@ mod tests {
     use super::*;
 
     mod packagetests {
-        use crate::package::owned::Package;
         use super::*;
+        use crate::package::owned::Package;
 
         #[test]
         fn single_contains_true() {
@@ -58,9 +52,9 @@ mod tests {
 
         #[test]
         fn half_open_contains_true() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: Package::from_str("foo-0.1.0").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-0.1.1").unwrap();
@@ -69,9 +63,9 @@ mod tests {
 
         #[test]
         fn half_open_contains_to_small() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-0.1.0").unwrap();
@@ -80,9 +74,9 @@ mod tests {
 
         #[test]
         fn half_open_contains_to_big() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-1.0.1").unwrap();
@@ -90,21 +84,20 @@ mod tests {
         }
         #[test]
         fn half_open_contains_end_false() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-1.0.0").unwrap();
             assert!(!ident.contains(&test));
         }
 
-
         #[test]
         fn open_contains_true() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-0.5.0").unwrap();
@@ -113,9 +106,9 @@ mod tests {
 
         #[test]
         fn open_contains_too_small() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-0.1.0").unwrap();
@@ -124,9 +117,9 @@ mod tests {
 
         #[test]
         fn open_contains_too_big() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-1.0.1").unwrap();
@@ -137,7 +130,7 @@ mod tests {
         fn open_contains_end_true() {
             let ident = Interval::Open {
                 start: Package::from_str("foo-0.1.1").unwrap(),
-                end: Package::from_str("foo-1.0.0").unwrap()
+                end: Package::from_str("foo-1.0.0").unwrap(),
             };
 
             let test = Package::from_str("foo-1.0.0").unwrap();
@@ -173,19 +166,22 @@ mod tests {
                 end: Package::from_str("foo-0.4.2").unwrap(),
             };
 
-            let result = range.iter().filter(|x| interval.contains(x)).collect::<Vec<&Package>>();
+            let result = range
+                .iter()
+                .filter(|x| interval.contains(x))
+                .collect::<Vec<&Package>>();
 
             assert_eq!(result.len(), 5);
             assert_eq!(result, *expected);
 
             let expected = Package::from_str("foo-0.4.1").unwrap();
-            assert_eq!(result[result.len()-1], &expected);
+            assert_eq!(result[result.len() - 1], &expected);
         }
     }
 
     mod version_num_test {
-        use crate::version_number::VersionNumber;
         use super::*;
+        use crate::version_number::VersionNumber;
         #[test]
         fn single_contains_true() {
             let ident = Interval::Single(VersionNumber::from_string("0.1.0").unwrap());
@@ -202,9 +198,9 @@ mod tests {
 
         #[test]
         fn half_open_contains_true() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: VersionNumber::from_string("0.1.0").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("0.1.1").unwrap();
@@ -213,22 +209,20 @@ mod tests {
 
         #[test]
         fn half_open_contains_to_small() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("0.1.0").unwrap();
             assert!(!ident.contains(&test));
         }
 
-
-
         #[test]
         fn half_open_contains_to_big() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("1.0.1").unwrap();
@@ -237,9 +231,9 @@ mod tests {
 
         #[test]
         fn half_open_contains_end_false() {
-            let ident = Interval::HalfOpen{
+            let ident = Interval::HalfOpen {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("1.0.0").unwrap();
@@ -248,9 +242,9 @@ mod tests {
 
         #[test]
         fn open_contains_true() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("0.5.0").unwrap();
@@ -259,21 +253,20 @@ mod tests {
 
         #[test]
         fn open_contains_too_small() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("0.1.0").unwrap();
             assert!(!ident.contains(&test));
         }
 
-
         #[test]
         fn open_contains_too_big() {
-            let ident = Interval::Open{
+            let ident = Interval::Open {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("1.0.1").unwrap();
@@ -284,7 +277,7 @@ mod tests {
         fn open_contains_end_true() {
             let ident = Interval::Open {
                 start: VersionNumber::from_string("0.1.1").unwrap(),
-                end: VersionNumber::from_string("1.0.0").unwrap()
+                end: VersionNumber::from_string("1.0.0").unwrap(),
             };
 
             let test = VersionNumber::from_string("1.0.0").unwrap();
@@ -313,21 +306,26 @@ mod tests {
                 VersionNumber::from_string("0.5.3").unwrap(),
             ];
 
-            let expected = &range[6..11].iter().map(|x| x).collect::<Vec<&VersionNumber>>();
+            let expected = &range[6..11]
+                .iter()
+                .map(|x| x)
+                .collect::<Vec<&VersionNumber>>();
 
             let interval = Interval::HalfOpen {
                 start: VersionNumber::from_string("0.3.2").unwrap(),
                 end: VersionNumber::from_string("0.4.2").unwrap(),
             };
 
-            let result = range.iter().filter(|x| interval.contains(x))
-            .collect::<Vec<&VersionNumber>>();
+            let result = range
+                .iter()
+                .filter(|x| interval.contains(x))
+                .collect::<Vec<&VersionNumber>>();
 
             assert_eq!(result.len(), 5);
             assert_eq!(result, *expected);
 
             let expected = VersionNumber::from_string("0.4.1").unwrap();
-            assert_eq!(result[result.len()-1], &expected);
+            assert_eq!(result[result.len() - 1], &expected);
         }
     }
 }
