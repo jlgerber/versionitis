@@ -11,7 +11,7 @@ type PMap = HashMap<String, IdxType>;
 /// Store packages in a SAT friendly structure
 pub struct PackageMap {
     arena: Vec<Package>,
-    map: PMap
+    map: PMap,
 }
 
 impl PackageMap {
@@ -24,7 +24,7 @@ impl PackageMap {
     }
 
     /// add a Package to the map if it doesnt exist
-    pub fn add(&mut self, version: Package)  {
+    pub fn add(&mut self, version: Package) {
         let name = version.name().to_string();
         if !self.has(name.as_str()) {
             self.arena.push(version);
@@ -50,7 +50,7 @@ impl PackageMap {
     pub fn get(&self, value: &str) -> Option<IdxType> {
         match self.map.get(value) {
             Some(value) => Some(*value),
-            None => None
+            None => None,
         }
     }
 
@@ -58,12 +58,12 @@ impl PackageMap {
     /// is a positive integer (ie it is stored in 1-based list to be compatible with
     /// SAT solver semantics )
     pub fn at_lit(&self, lit: IdxType) -> Option<&Package> {
-        self.arena.get( (lit - 1) as usize)
+        self.arena.get((lit - 1) as usize)
     }
 
     /// Return an option wrapped mutable reference to a Package
     pub fn at_lit_mut(&mut self, lit: IdxType) -> Option<&mut Package> {
-        self.arena.get_mut( (lit - 1 )as usize)
+        self.arena.get_mut((lit - 1) as usize)
     }
 
     /// Retrieve the number of elements stored
