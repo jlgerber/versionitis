@@ -7,7 +7,7 @@ use crate::{
     interval::Interval,
     package::owned::Package,
 };
-use serde::ser::{Serialize, Serializer, SerializeStructVariant};
+use serde::ser::{ Serialize, Serializer, SerializeStructVariant };
 use serde_derive::{Deserialize,Serialize};
 use std::collections::HashSet;
 
