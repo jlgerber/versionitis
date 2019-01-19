@@ -6,8 +6,8 @@ use crate::{
     errors::VersionitisError,
     interval::Interval,
     package::owned::Package,
-    //version_number::VersionNumber,
 };
+use serde::ser::{Serialize, Serializer, SerializeStructVariant};
 use serde_derive::{Deserialize,Serialize};
 use std::collections::HashSet;
 
@@ -23,8 +23,35 @@ pub enum PISrc<'a> {
 /// using  Interval<T>, where T = package
 pub type PackageInterval = Interval<Package>;
 
-impl PackageInterval {
+impl Serialize for PackageInterval {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match *self {
+             Interval::Single(ref v) => {
+                serializer.serialize_newtype_variant( "Interval", 0, "Single", &v.name())
+            }
 
+            Interval::HalfOpen{ref start, ref end} => {
+                let mut state = serializer.serialize_struct_variant("Interval", 0, "HalfOpen", 2)?;
+                state.serialize_field("start", &start.name())?;
+                state.serialize_field("end", &end.name())?;
+                state.end()
+            }
+
+            Interval::Open{ref start, ref end} => {
+                let mut state = serializer.serialize_struct_variant("Interval", 0, "Open", 2)?;
+                state.serialize_field("start", &start.name())?;
+                state.serialize_field("end", &end.name())?;
+                state.end()
+            }
+        }
+    }
+}
+
+
+impl PackageInterval {
     /// Retrieve the package name for the PackageInterval as a &str.
     pub fn package_name(&self) -> &str {
          match *self {
@@ -166,7 +193,6 @@ impl Manifest {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -178,7 +204,6 @@ mod tests {
         fn can_construct() {
             let manifest = Manifest::new("fred-1.0.0");
         }
-
 
         #[test]
         fn get_package_name() {
@@ -193,7 +218,6 @@ mod tests {
             let name = manifest.package();
             assert_eq!(name, "fred-1.0.0");
         }
-
 
         #[test]
         fn add_dependencies() {
@@ -269,7 +293,6 @@ mod tests {
             // single
             assert!(manifest.depends_on_package(&pfs("foo-0.1.0")));
             assert!(!manifest.depends_on_package(&pfs("foo-1.1.0")));
-
             // half open
             assert!(manifest.depends_on_package(&pfs("bar-0.1.0")));
             assert!(manifest.depends_on_package(&pfs("bar-0.5.0")));
@@ -279,7 +302,6 @@ mod tests {
             assert!(manifest.depends_on_package(&pfs("bla-0.1.0")));
             assert!(manifest.depends_on_package(&pfs("bla-1.0.0")));
             assert!(!manifest.depends_on_package(&pfs("bla-1.1.0")));
-
             // not a package
             assert!(!manifest.depends_on_package(&pfs("blargybalargy-1.0.0")));
         }
