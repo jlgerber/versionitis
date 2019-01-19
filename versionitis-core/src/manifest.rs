@@ -30,18 +30,18 @@ impl Serialize for PackageInterval {
     {
         match *self {
              Interval::Single(ref v) => {
-                serializer.serialize_newtype_variant( "Interval", 0, "Single", &v.name())
+                serializer.serialize_newtype_variant( "Interval", 0, "single", &v.name())
             }
 
             Interval::HalfOpen{ref start, ref end} => {
-                let mut state = serializer.serialize_struct_variant("Interval", 0, "HalfOpen", 2)?;
+                let mut state = serializer.serialize_struct_variant("Interval", 0, "half_open", 2)?;
                 state.serialize_field("start", &start.name())?;
                 state.serialize_field("end", &end.name())?;
                 state.end()
             }
 
             Interval::Open{ref start, ref end} => {
-                let mut state = serializer.serialize_struct_variant("Interval", 0, "Open", 2)?;
+                let mut state = serializer.serialize_struct_variant("Interval", 0, "open", 2)?;
                 state.serialize_field("start", &start.name())?;
                 state.serialize_field("end", &end.name())?;
                 state.end()

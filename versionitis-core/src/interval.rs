@@ -9,6 +9,7 @@ use serde_derive::{Deserialize,Serialize};
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
 /// and upper bounds are inclusive.
 #[derive(Debug,PartialEq,Eq,Hash,/*Serialize,*/Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Interval<T: Eq+Ord+Debug+Hash> {
     Single(T),
     HalfOpen{start:T, end:T},

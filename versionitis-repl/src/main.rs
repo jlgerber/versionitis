@@ -10,7 +10,6 @@ type Feedback = Option<Result<String, String>>;
 
 struct RepoRepl {
     repo: Repo,
-    manifest: Option<Manifest>,
     feedback:Feedback,
 }
 
@@ -18,7 +17,6 @@ impl RepoRepl {
     fn new() -> Self {
         Self {
             repo: Repo::new(),
-            manifest: None,
             feedback: None,
         }
     }
@@ -191,6 +189,7 @@ impl RepoRepl {
         print!("\n(file [CWD:{}] ):", path.to_str().unwrap());
         io::stdout().flush().unwrap();
         let mut input = String::new();
+
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
                 input.pop();
@@ -201,13 +200,10 @@ impl RepoRepl {
                 self.feedback = Some(Ok(format!("loaded: {}", input)));
                 let f = std::fs::File::open(input)?;
                 let r: Manifest = serde_yaml::from_reader(f)?;
-                println!("MANIFEST");
-                println!("{:#?}", r);
                 Ok(r)
             }
 
             Err(error) => {
-                self.feedback = Some(Err(error.to_string()));
                 Err(VersionitisError::IoError(error.to_string()))
             }
         }
@@ -246,12 +242,15 @@ impl RepoRepl {
 
             "n" =>  {
                 let result = self.deserialize_manifest();
-                if result.is_err() {
-                    eprintln!("ERROR\n{:?}", result);
-                } else {
-                    println!("MANIFEST\n{:?}", result);
+                match result {
+                    Ok(manifest) => {
+                        println!("{:#?}", manifest);
+                        self.await_user();
+                    }
+                    Err(error) => {
+                        self.feedback = Some(Err(error.to_string()));
+                    }
                 }
-                self.await_user();
             }
 
             "q" => {
