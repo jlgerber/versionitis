@@ -4,7 +4,8 @@
 use core::str::FromStr;
 use std::fmt::Debug;
 
-/// Trait for defining a version scheme
+/// Trait for defines a version scheme, which must be comparable,
+/// convertable to and from string, and debugable
 pub trait Versionable: Eq + Ord + Debug + ToString + FromStr {}
 
 /// Trait defines a package database interface. A package database is responsible
@@ -14,7 +15,7 @@ pub trait TrackPackages {
     type GetReturns: Debug + Eq + Ord;
     type Errors: failure::Fail;
 
-    /// Add a package version
+    /// Add a package version, expressed as a &str
     fn add_version(
         &mut self,
         package_name: &str,
