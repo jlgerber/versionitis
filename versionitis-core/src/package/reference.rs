@@ -30,6 +30,13 @@ impl<'a> Package<'a> {
         }
     }
 
+    pub fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn spec(&self) -> String {
+        self.to_string()
+    }
     /// construct a Package with 3 u16 values
     pub fn semver<'b: 'a>(name: &'b str, major: u16, minor: u16, micro: u16) -> Self {
         let value = vec![major, minor, micro];
