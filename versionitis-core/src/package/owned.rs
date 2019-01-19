@@ -1,15 +1,61 @@
 pub mod interval;
 
 use crate::version_number::VersionNumber;
-use serde_derive::{Deserialize,Serialize};
 use std::{ fmt,  /*hash::Hash*/ };
+
+use serde::{
+    ser::{Serialize, Serializer, SerializeStruct},
+    de::{self, Visitor, Deserializer},
+    Deserialize,
+};
 
 /// Package implements Versionable trait. A VersionNumber may be comprised
 /// of one or more u16 digits
-#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize,Hash)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, /*Deserialize,Serialize,*/ Hash)]
 pub struct Package {
     pub name: String,
     version: VersionNumber,
+}
+
+impl Serialize for Package {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Package", 1)?;
+        let value = format!("{}-{}", self.name, self.version);
+        state.serialize_field("package", &value)?;
+        state.end()
+    }
+}
+
+struct PackageVisitor;
+
+impl<'de> Visitor<'de> for PackageVisitor {
+    type Value = Package;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("an integer between -2^31 and 2^31")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        match Package::from_str(value) {
+            Ok(v) => Ok(v),
+            Err(e) => panic!("unable to deserialize: {}", e),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Package {
+    fn deserialize<D>(deserializer: D) -> Result<Package, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(PackageVisitor)
+    }
 }
 
 impl fmt::Debug for Package {
