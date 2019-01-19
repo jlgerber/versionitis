@@ -25,7 +25,7 @@ impl PackageMap {
 
     /// add a Package to the map if it doesnt exist
     pub fn add(&mut self, version: Package) {
-        let name = version.name().to_string();
+        let name = version.spec().to_string();
         if !self.has(name.as_str()) {
             self.arena.push(version);
             self.map.insert(name, self.arena.len() as IdxType);

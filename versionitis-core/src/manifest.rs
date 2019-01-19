@@ -26,21 +26,21 @@ impl Serialize for PackageInterval {
     {
         match *self {
             Interval::Single(ref v) => {
-                serializer.serialize_newtype_variant("Interval", 0, "single", &v.name())
+                serializer.serialize_newtype_variant("Interval", 0, "single", &v.spec())
             }
 
             Interval::HalfOpen { ref start, ref end } => {
                 let mut state =
                     serializer.serialize_struct_variant("Interval", 0, "half_open", 2)?;
-                state.serialize_field("start", &start.name())?;
-                state.serialize_field("end", &end.name())?;
+                state.serialize_field("start", &start.spec())?;
+                state.serialize_field("end", &end.spec())?;
                 state.end()
             }
 
             Interval::Open { ref start, ref end } => {
                 let mut state = serializer.serialize_struct_variant("Interval", 0, "open", 2)?;
-                state.serialize_field("start", &start.name())?;
-                state.serialize_field("end", &end.name())?;
+                state.serialize_field("start", &start.spec())?;
+                state.serialize_field("end", &end.spec())?;
                 state.end()
             }
         }
@@ -188,7 +188,7 @@ mod tests {
         }
 
         #[test]
-        fn get_package_name() {
+        fn get_package_spec() {
             type PI = PackageInterval;
             use self::PISrc::*;
             let mut manifest = Manifest::new("fred-1.0.0");

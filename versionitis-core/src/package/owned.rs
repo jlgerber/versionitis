@@ -9,8 +9,8 @@ use serde::{
     Deserialize,
 };
 
-/// Package implements Versionable trait. A VersionNumber may be comprised
-/// of one or more u16 digits
+/// A named entity which is ordered, convertable to and from a
+/// string, hashable, and may of course be debuged.
 #[derive(PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Package {
     pub name: String,
@@ -76,12 +76,12 @@ impl Package {
         self.name.as_str()
     }
 
-    /// Get the full name, in the form of "name-version", as a String
-    pub fn name(&self) -> String {
+    /// Get the full specification for a package, in the form of "name-version", as a String
+    pub fn spec(&self) -> String {
         format!("{}-{}", self.name, self.version.to_string())
     }
 
-    /// Construct a Package from a vector of u16
+    /// Construct a Package from a name and a VersionNumber instance.
     pub fn new<T: Into<String>>(name: T, version: VersionNumber) -> Self {
         Self {
             name: name.into(),
