@@ -2,22 +2,15 @@
 //!
 //! Store and retrieve package versions. The repo is intended to
 //! hold the available packages in memory.
-use crate::{
-    errors::VersionitisError,
-    package::owned::Package,
-    traits::TrackPackages,
-};
-use serde_derive::{Deserialize,Serialize};
-use std::{
-    collections::HashMap,
-    iter::Iterator,
-};
+use crate::{errors::VersionitisError, package::owned::Package, traits::TrackPackages};
+use serde_derive::{Deserialize, Serialize};
+use std::{collections::HashMap, iter::Iterator};
 
 // type alias
 type PackageMap = HashMap<String, Vec<Package>>;
 
 /// The Repo stores package versions for each package
-#[derive(Debug,PartialEq,Eq,Deserialize,Serialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Repo {
     pub packages: PackageMap,
     unchecked: bool, // have we called add_version_nocheck
@@ -34,12 +27,12 @@ impl Repo {
 
     /// Walk through each of the keys and sort
     pub fn dedup_sort(&mut self) {
-        self.packages.iter_mut().for_each(|(key,v)| {
+        self.packages.iter_mut().for_each(|(key, v)| {
             v.sort();
             v.dedup();
             // TODO: do we need this here? only after deserialization. perhaps
             // i will put it there.
-            v.iter_mut().filter(|x| x.package() == key ).for_each(|_|{});
+            v.iter_mut().filter(|x| x.package() == key).for_each(|_| {});
         });
         self.unchecked = false;
     }
@@ -47,14 +40,21 @@ impl Repo {
     /// Add version but do not bother to check for duplicates / monotonic
     /// increase. IFF you are going to add a bunch of versions in arbitary
     /// order then use add_version_nocheck and call dedup_sort afterwards
-    pub fn add_version_unchecked(&mut self, package_name: &str, version: &str)
-    -> Result<(), VersionitisError> {
+    pub fn add_version_unchecked(
+        &mut self,
+        package_name: &str,
+        version: &str,
+    ) -> Result<(), VersionitisError> {
         self.add_version_imp(package_name, version, false)
     }
 
     /// Implementation for add_version and add_version_nocheck
-    fn add_version_imp(&mut self, package_name: &str, version: &str, check: bool)
-    -> Result<(), VersionitisError> {
+    fn add_version_imp(
+        &mut self,
+        package_name: &str,
+        version: &str,
+        check: bool,
+    ) -> Result<(), VersionitisError> {
         let pack = Package::from_strs(package_name, version)?;
         // retrieve the vector of package versions for the supplied
         // package name. If it exists, verify that the new package's
@@ -64,11 +64,9 @@ impl Repo {
         match self.packages.get_mut(package_name) {
             Some(ref mut lst) => {
                 if check {
-                    if let Some(last_elem) = lst.last()  {
+                    if let Some(last_elem) = lst.last() {
                         if *last_elem >= pack {
-                            return Err(
-                                VersionitisError::InvalidPackageVersion(pack.to_string())
-                            );
+                            return Err(VersionitisError::InvalidPackageVersion(pack.to_string()));
                         }
                     }
                 } else {
@@ -78,13 +76,13 @@ impl Repo {
                 // to the vector
                 lst.push(pack);
                 Ok(())
-            },
+            }
             _ => {
                 // the package key does not exist. Create it and add a vec
                 // value which has the new versioned package.
                 self.packages.insert(package_name.to_string(), vec![pack]);
                 Ok(())
-            },
+            }
         }
     }
 
@@ -103,10 +101,12 @@ impl TrackPackages for Repo {
     /// name and version, as &strs. The add_version method will
     /// construt a Package instance and add it to the repo, if it
     /// isn't already present.
-    fn add_version(&mut self, package_name: &str, version: &str)
-    -> Result<Self::AddReturns, Self::Errors> {
+    fn add_version(
+        &mut self,
+        package_name: &str,
+        version: &str,
+    ) -> Result<Self::AddReturns, Self::Errors> {
         self.add_version_imp(package_name, version, true)
-
     }
 
     /// Given a package name (sans version), fetch a vector of Packages wrapped in a
@@ -115,10 +115,9 @@ impl TrackPackages for Repo {
     fn get<'a>(&'a self, package: &str) -> Result<&'a Vec<Package>, VersionitisError> {
         match self.packages.get(package) {
             Some(ref pv) => Ok(pv),
-            None => Err(VersionitisError::UnknownPackage(package.to_string()))
+            None => Err(VersionitisError::UnknownPackage(package.to_string())),
         }
     }
-
 }
 
 #[cfg(test)]
@@ -187,7 +186,6 @@ unchecked: false"#;
         assert_eq!(repo.get(package_name).unwrap().len(), 6);
     }
 
-
     #[test]
     fn dedup_sort_cleans_up() {
         let mut repo = Repo::new();
@@ -205,9 +203,12 @@ unchecked: false"#;
         repo.dedup_sort();
 
         let package = repo.get(package_name).unwrap();
-        let versions = vec!["0.1.0", "0.2.0", "0.2.1","0.2.3", "0.3.0"];
-        package.iter().enumerate().for_each(|(idx,pack)| {
-            assert_eq!(pack, &Package::from_strs(package_name, versions[idx]).unwrap());
+        let versions = vec!["0.1.0", "0.2.0", "0.2.1", "0.2.3", "0.3.0"];
+        package.iter().enumerate().for_each(|(idx, pack)| {
+            assert_eq!(
+                pack,
+                &Package::from_strs(package_name, versions[idx]).unwrap()
+            );
         });
     }
 
@@ -246,9 +247,7 @@ unchecked: false"#;
         // clean up
         repo.dedup_sort();
 
-    let deserialized: Repo = serde_yaml::from_str(&REPO).unwrap();
-    assert_eq!(deserialized, repo);
-
+        let deserialized: Repo = serde_yaml::from_str(&REPO).unwrap();
+        assert_eq!(deserialized, repo);
     }
 }
-
