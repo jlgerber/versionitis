@@ -19,9 +19,9 @@ pub enum PISrc<'a> {
     Open(&'a str, &'a str)
 }
 
-
+/// A package interval expresses a range of package versions
+/// using  Interval<T>, where T = package
 pub type PackageInterval = Interval<Package>;
-pub type IntervalSet     = HashSet<PackageInterval>;
 
 impl PackageInterval {
 
@@ -79,6 +79,8 @@ impl PackageInterval {
         }
     }
 }
+
+pub type IntervalSet     = HashSet<PackageInterval>;
 
 /// A manifest stores a set of dependencies for a named package.
 /// The dependencies are modeled as a HashSet<Interval<Package>>.
