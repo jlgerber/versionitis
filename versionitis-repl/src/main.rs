@@ -4,11 +4,13 @@ use versionitis::errors::VersionitisError;
 use std::fs::File;
 use std::io::{self, Write,};
 use std::path::Path;
+use versionitis::manifest::Manifest;
 
 type Feedback = Option<Result<String, String>>;
 
 struct RepoRepl {
     repo: Repo,
+    manifest: Option<Manifest>,
     feedback:Feedback,
 }
 
@@ -16,6 +18,7 @@ impl RepoRepl {
     fn new() -> Self {
         Self {
             repo: Repo::new(),
+            manifest: None,
             feedback: None,
         }
     }
@@ -43,6 +46,7 @@ impl RepoRepl {
         println!("(w) - write repo to file");
         println!("(v) - add version");
         println!("(m) - serialize manifest test");
+        println!("(n) - read manifest from disk");
         println!("(q) - quit");
 
         match &self.feedback {
@@ -181,6 +185,34 @@ impl RepoRepl {
         Ok(())
     }
 
+    fn deserialize_manifest(&mut self) -> Result<Manifest,VersionitisError>  {
+        print!("{}[2J", 27 as char);
+        let path = std::env::current_dir()?;
+        print!("\n(file [CWD:{}] ):", path.to_str().unwrap());
+        io::stdout().flush().unwrap();
+        let mut input = String::new();
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                input.pop();
+                if !Path::new(&input).exists() {
+                    self.feedback = Some(Err(format!("path:'{}' does not exist on disk", input)));
+                    return Err(VersionitisError::NonExtantFileError(format!("path:'{}' doesn't exist", input)));
+                }
+                self.feedback = Some(Ok(format!("loaded: {}", input)));
+                let f = std::fs::File::open(input)?;
+                let r: Manifest = serde_yaml::from_reader(f)?;
+                println!("MANIFEST");
+                println!("{:#?}", r);
+                Ok(r)
+            }
+
+            Err(error) => {
+                self.feedback = Some(Err(error.to_string()));
+                Err(VersionitisError::IoError(error.to_string()))
+            }
+        }
+    }
+
     fn handle_results(&mut self, input: &str) -> Result<bool, VersionitisError> {
         match input {
 
@@ -209,6 +241,17 @@ impl RepoRepl {
 
             "m" => {
                 self.serialize_manifest();
+
+            }
+
+            "n" =>  {
+                let result = self.deserialize_manifest();
+                if result.is_err() {
+                    eprintln!("ERROR\n{:?}", result);
+                } else {
+                    println!("MANIFEST\n{:?}", result);
+                }
+                self.await_user();
             }
 
             "q" => {
