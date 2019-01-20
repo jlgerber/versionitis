@@ -5,7 +5,7 @@
 use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
 use serde::ser::{Serialize, SerializeStructVariant, Serializer};
 use serde_derive::{Deserialize, Serialize};
-use crate::interval::PISrc;
+use crate::interval::Range;
 
 /// A package interval expresses a range of package versions
 /// using  Interval<T>, where T = package
@@ -56,26 +56,26 @@ impl PackageInterval {
     /// # Example
     ///
     /// ```ignore
-    /// let package_interval = PackageInterval::from_src(&PISrc::Open("foo-0.1.0", "foo-1.0.0"))?;
+    /// let package_interval = PackageInterval::from_src(&Range::Open("foo-0.1.0", "foo-1.0.0"))?;
     /// ```
     ///
     /// One may wish to make this more ergonomic though:
     ///
     /// ```ignore
     /// type PI = PackageInterval;
-    /// use self::PISrc::Open;
+    /// use self::Range::Open;
     /// let package_interval = PI::from_src(&Open("foo-0.1.0", "foo-1.0.0"))?;
     /// ```
-    pub fn from_src(input: &PISrc) -> Result<PackageInterval, VersionitisError> {
+    pub fn from_src(input: &Range) -> Result<PackageInterval, VersionitisError> {
         match *input {
-            PISrc::Single(ref name) => Ok(Interval::Single(Package::from_str(name)?)),
+            Range::Single(ref name) => Ok(Interval::Single(Package::from_str(name)?)),
 
-            PISrc::HalfOpen(ref p1, ref p2) => Ok(Interval::HalfOpen {
+            Range::HalfOpen(ref p1, ref p2) => Ok(Interval::HalfOpen {
                 start: Package::from_str(p1)?,
                 end: Package::from_str(p2)?,
             }),
 
-            PISrc::Open(ref p1, ref p2) => Ok(Interval::Open {
+            Range::Open(ref p1, ref p2) => Ok(Interval::Open {
                 start: Package::from_str(p1)?,
                 end: Package::from_str(p2)?,
             }),
@@ -91,7 +91,7 @@ mod test {
     #[test]
     fn serialize() {
         let pi: PackageInterval = serde_yaml::from_str(&SINGLE).unwrap();
-        let expect = PackageInterval::from_src(&PISrc::Single("foo-1.2.3")).unwrap();
+        let expect = PackageInterval::from_src(&Range::Single("foo-1.2.3")).unwrap();
         assert_eq!(pi,expect);
 
     }

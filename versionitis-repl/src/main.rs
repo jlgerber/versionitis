@@ -170,7 +170,7 @@ impl RepoRepl {
     fn serialize_manifest(&self) -> Result<(),VersionitisError>  {
         use versionitis::manifest::{Manifest};
         use versionitis::package::owned::interval::PackageInterval;
-        use versionitis::interval::PISrc::*;
+        use versionitis::interval::Range::*;
         type PI=PackageInterval;
         let mut manifest = Manifest::new("fred-1.0.0");
         let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();

@@ -7,7 +7,7 @@ use serde::ser::{Serialize, SerializeStructVariant, Serializer};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use crate::package::owned::interval::{PackageInterval};
-use crate::interval::PISrc;
+use crate::interval::Range;
 
 
 pub type IntervalSet = HashSet<PackageInterval>;
@@ -104,7 +104,7 @@ mod tests {
         #[test]
         fn get_package_spec() {
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -118,7 +118,7 @@ mod tests {
         #[test]
         fn add_dependencies() {
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -131,7 +131,7 @@ mod tests {
         fn add_dependencies_src() {
             // make this a bit more ergonomic to type
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -143,7 +143,7 @@ mod tests {
         #[test]
         fn cannot_add_duplicate_dependency() {
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -161,7 +161,7 @@ mod tests {
         #[test]
         fn depends_on() {
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -179,7 +179,7 @@ mod tests {
         fn depends_on_package() {
             let pfs = |n: &str| Package::from_str(n).unwrap();
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
@@ -226,7 +226,7 @@ dependencies:
             // create a manifest
             let pfs = |n: &str| Package::from_str(n).unwrap();
             type PI = PackageInterval;
-            use self::PISrc::*;
+            use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
             let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
             let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();

@@ -7,7 +7,7 @@ use serde_derive::{Deserialize, Serialize};
 
 /// Enum wrapping possible inputs to PackageInterval::from_src
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PISrc<'a> {
+pub enum Range<'a> {
     Single(&'a str),
     HalfOpen(&'a str, &'a str),
     Open(&'a str, &'a str),
