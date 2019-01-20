@@ -3,11 +3,11 @@
 //! stores package dependencies
 //!
 use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
-use serde::ser::{Serialize, SerializeStructVariant, Serializer};
+//use serde::ser::{Serialize, SerializeStructVariant, Serializer};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use crate::package::owned::interval::{PackageInterval};
-use crate::interval::Range;
+//use crate::interval::Range;
 
 
 pub type IntervalSet = HashSet<PackageInterval>;
@@ -97,6 +97,7 @@ impl Manifest {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interval::Range;
 
     mod manifest {
         use super::*;
@@ -224,7 +225,7 @@ dependencies:
         #[test]
         fn deserialize_manifest() {
             // create a manifest
-            let pfs = |n: &str| Package::from_str(n).unwrap();
+            //zlet pfs = |n: &str| Package::from_str(n).unwrap();
             type PI = PackageInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");

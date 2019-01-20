@@ -7,10 +7,11 @@ pub mod interval;
 use crate::version_number::VersionNumber;
 use serde::{
     de::{self, Deserializer, Visitor},
-    ser::{Serialize, SerializeStruct, Serializer},
+    ser::{Serialize, /*SerializeStruct,*/ Serializer},
     Deserialize,
 };
 use std::fmt;
+
 
 /// A named entity which is ordered, convertable to and from a
 /// string, hashable, and may of course be debuged.
