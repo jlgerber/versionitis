@@ -52,7 +52,7 @@ impl Manifest {
     /// manifest.add_dependency(interval)?;
     /// ```
     pub fn add_dependency(&mut self, interval: PackageInterval) -> Result<(), VersionitisError> {
-        let package_name = interval.package_name(); //package_name_for(&interval);
+        let package_name = interval.package_name();
         if self.depends_on(package_name) {
             return Err(VersionitisError::DuplicatePackageDependency(
                 package_name.to_string(),
@@ -215,15 +215,29 @@ dependencies:
       start: bar-0.1.0
       end: bar-1.0.0"#;
 
+        const MANIFEST_NEW: &'static str = r#"---
+name: fred-1.0.0
+dependencies:
+  - bla: '0.1.0<=1.0.0'
+  - foo: '0.1.0'
+  - bar: '0.1.0<1.0.0'"#;
+
         #[test]
-        fn serialize_manifest() {
+        fn deserialize_manifest() {
             let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST);
-            assert!(result.is_ok() );
+            match result {
+                Err(e) => {
+                    let e_conv: VersionitisError = e.into();
+                    assert_eq!(e_conv, VersionitisError::UnknownPackage("foo".to_string()))},
+                Ok(s) => {}
+            };
+            //assert_eq!(result, Ok(Manifest::new("fred-1.0.0")))
+            //assert!(result.is_ok() );
         }
 
 
         #[test]
-        fn deserialize_manifest() {
+        fn serialize_manifest() {
             // create a manifest
             //zlet pfs = |n: &str| Package::from_str(n).unwrap();
             type PI = PackageInterval;

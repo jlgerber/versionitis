@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
-#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize, Hash)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize, Hash, Clone)]
 pub struct VersionNumber(Vec<u16>);
 
 impl fmt::Debug for VersionNumber {

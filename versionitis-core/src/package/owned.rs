@@ -15,7 +15,7 @@ use std::fmt;
 
 /// A named entity which is ordered, convertable to and from a
 /// string, hashable, and may of course be debuged.
-#[derive(PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Hash, Clone)]
 pub struct Package {
     name: String,
     version: VersionNumber,
