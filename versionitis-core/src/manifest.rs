@@ -283,5 +283,48 @@ mod tests {
             // not a package
             assert!(!manifest.depends_on_package(&pfs("blargybalargy-1.0.0")));
         }
+
+        const MANIFEST: &'static str = r#"---
+name: fred-1.0.0
+dependencies:
+  - open:
+      start: bla-0.1.0
+      end: bla-1.0.0
+  - single: foo-0.1.0
+  - half_open:
+      start: bar-0.1.0
+      end: bar-1.0.0"#;
+
+        #[test]
+        fn serialize_manifest() {
+            let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST);
+            assert!(result.is_ok() );
+        }
+
+
+        #[test]
+        fn deserialize_manifest() {
+            // create a manifest
+            let pfs = |n: &str| Package::from_str(n).unwrap();
+            type PI = PackageInterval;
+            use self::PISrc::*;
+            let mut manifest = Manifest::new("fred-1.0.0");
+            let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
+            let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+            let interval3 = PI::from_src(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
+            manifest.add_dependency(interval1).unwrap();
+            manifest.add_dependency(interval2).unwrap();
+            manifest.add_dependency(interval3).unwrap();
+            //serialize the manifest to a string
+            let result = serde_yaml::to_string(&manifest);
+            assert!(result.is_ok());
+            //convert the string back to a manifest via serde
+            let result = result.unwrap();
+            let expected: Manifest = serde_yaml::from_str(&result).unwrap();
+            // verify that the original manifest looks like the round trip.
+            // we are doing this because we cannot guarantee the order of the
+            // serialized fields, so doing a string compare doesnt work consistently
+            assert_eq!(manifest, expected);
+        }
     }
 }
