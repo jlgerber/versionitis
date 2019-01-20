@@ -126,31 +126,11 @@ mod tests {
     const REPO: &'static str = r#"---
 packages:
   fred:
-    - name: fred
-      version:
-        - 0
-        - 1
-        - 0
-    - name: fred
-      version:
-        - 0
-        - 2
-        - 0
-    - name: fred
-      version:
-        - 0
-        - 2
-        - 1
-    - name: fred
-      version:
-        - 0
-        - 2
-        - 3
-    - name: fred
-      version:
-        - 0
-        - 3
-        - 0
+    - fred-0.1.0
+    - fred-0.2.0
+    - fred-0.2.1
+    - fred-0.2.3
+    - fred-0.3.0
 unchecked: false"#;
 
     fn setup_repo(package_name: &str) -> Repo {
