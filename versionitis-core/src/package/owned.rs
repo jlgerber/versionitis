@@ -67,7 +67,7 @@ impl<'de> Deserialize<'de> for Package {
 
 impl fmt::Debug for Package {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}-{}", self.name, self.version.to_string())
+        write!(f, "{}-{}", self.name, self.version)
     }
 }
 
@@ -86,9 +86,13 @@ impl Package {
     /// Get the full specification for a package, in the form of "name-version",
     /// as a String
     pub fn spec(&self) -> String {
-        format!("{}-{}", self.name, self.version.to_string())
+        format!("{}-{}", self.name, self.version)
     }
 
+    /// Get the version as a &str from the package
+    pub fn version(&self) -> String {
+        self.version.to_string()
+    }
     /// Construct a Package from a name and a VersionNumber instance.
     pub fn new<T: Into<String>>(name: T, version: VersionNumber) -> Self {
         Self {
