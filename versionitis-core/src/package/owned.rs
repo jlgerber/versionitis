@@ -23,20 +23,24 @@ impl Serialize for Package {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Package", 1)?;
+        // let mut state = serializer.serialize_struct("Package", 1)?;
+        // let value = format!("{}-{}", self.name, self.version);
+        // state.serialize_field("spec", &value)?;
+        // state.end()
         let value = format!("{}-{}", self.name, self.version);
-        state.serialize_field("spec", &value)?;
-        state.end()
+        let result = serializer.serialize_newtype_struct("Package",&value);
+        result
+        //state.serialize_field("spec", &value)?;
     }
 }
-
+// PackageVisitor used for serde deserialization
 struct PackageVisitor;
-
+// Visitor implemented as part of custom serde pass
 impl<'de> Visitor<'de> for PackageVisitor {
     type Value = Package;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("an integer between -2^31 and 2^31")
+        formatter.write_str("a str of the form name-version (eg fred-0.1.0)")
     }
 
     fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -257,5 +261,18 @@ mod tests {
         let sv1 = Package::from_str(&package).unwrap();
         let sv2 = Package::semver4(&name, 0, 1, 0, 1);
         assert_eq!(sv1, sv2);
+    }
+    const YAML_PKG: &'static str = "---\nfred-0.1.2";
+    #[test]
+    fn serialize_package() {
+        let package = Package::from_str("fred-0.1.2").unwrap();
+        let yaml = serde_yaml::to_string(&package).unwrap();
+        assert_eq!(yaml, YAML_PKG);
+    }
+
+    #[test]
+    fn deserialize() {
+        let package: serde_yaml::Result<Package> = serde_yaml::from_str("fred-0.1.2");
+        assert!(package.is_ok());
     }
 }
