@@ -51,6 +51,22 @@ impl PackageInterval {
         }
     }
 
+    /// Convert the internal representatino to a compact range format.
+    pub fn to_range(&self) -> String {
+        match *self {
+            Interval::Single(ref v) => {
+                format!("{}: '{}'",v.name(), v.version().to_string())
+            }
+
+            Interval::HalfOpen { ref start, ref end } => {
+                format!("{}: '{}<{}'", start.name(), start.version(), end.version())
+            }
+
+            Interval::Open { ref start, ref end } => {
+                format!("{}: '{}<={}'", start.name(), start.version(), end.version())
+            }
+        }
+    }
     /// Constructs a PackageInterval from a Src enum reference.
     ///
     /// # Example
@@ -94,5 +110,26 @@ mod test {
         let expect = PackageInterval::from_range(&Range::Single("foo-1.2.3")).unwrap();
         assert_eq!(pi,expect);
 
+    }
+
+    #[test]
+    fn convert_single_to_range() {
+        let pi = PackageInterval::from_range(&Range::Single("foo-1.2.3")).unwrap();
+        let result = pi.to_range();
+        assert_eq!(result, "foo: '1.2.3'");
+    }
+
+    #[test]
+    fn convert_open_to_range() {
+        let pi = PackageInterval::from_range(&Range::Open("foo-1.2.3", "foo-2.0.0")).unwrap();
+        let result = pi.to_range();
+        assert_eq!(result, "foo: '1.2.3<=2.0.0'");
+    }
+
+    #[test]
+    fn convert_half_open_to_range() {
+        let pi = PackageInterval::from_range(&Range::HalfOpen("foo-1.2.3", "foo-2.0.0")).unwrap();
+        let result = pi.to_range();
+        assert_eq!(result, "foo: '1.2.3<2.0.0'");
     }
 }
