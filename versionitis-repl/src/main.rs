@@ -173,9 +173,9 @@ impl RepoRepl {
         use versionitis::interval::Range::*;
         type PI=PackageInterval;
         let mut manifest = Manifest::new("fred-1.0.0");
-        let interval1 = PI::from_src(&Single("foo-0.1.0")).unwrap();
-        let interval2 = PI::from_src(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-        let interval3 = PI::from_src(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
+        let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
+        let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
+        let interval3 = PI::from_range(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
         manifest.add_dependency(interval1).unwrap();
         manifest.add_dependency(interval2).unwrap();
         manifest.add_dependency(interval3).unwrap();

@@ -6,5 +6,6 @@ pub mod package;
 pub mod errors;
 pub mod manifest;
 pub mod repo;
+pub mod package_interval_parser;
 
 pub use crate::repo::Repo;

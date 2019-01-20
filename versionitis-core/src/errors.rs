@@ -25,6 +25,8 @@ pub enum VersionitisError {
     AddVersionError(String),
     #[fail(display = "DuplicatePackageDependency: {}", _0)]
     DuplicatePackageDependency(String),
+    #[fail(display = "ParseError: {}", _0)]
+    ParseError(String),
 }
 
 use std::num::ParseIntError;

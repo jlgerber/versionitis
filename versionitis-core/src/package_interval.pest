@@ -1,0 +1,13 @@
+alpha      = _{ 'a'..'z' | 'A'..'Z' }
+digit      = _{ '0'..'9' }
+space      = _{ (" ")* }
+name       = { (alpha | digit | "_" )+ }
+//name_eq    = { name ~ space ~ "=" ~ space }
+version    = {(digit)+ ~ ("." ~ (digit)+)* }
+version_a  = {(digit)+ ~ ("." ~ (digit)+)* }
+version_b  = {(digit)+ ~ ("." ~ (digit)+)* }
+single     = { name ~ space ~ "=" ~ space  ~  version}
+half_open  = {name ~ space ~ "=" ~ space ~ version_a ~ space  ~ "<" ~ space ~ version_b  }
+open       = {name ~ space ~ "=" ~ space ~ version_a ~ space  ~ "<=" ~ space ~ version_b  }
+half_open2 = {name ~ space ~ "=" ~ space ~ version ~ space  ~ "^"  }
+ident_list = _{ half_open | open | half_open2 | single  }
