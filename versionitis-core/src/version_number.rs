@@ -17,7 +17,8 @@ impl fmt::Debug for VersionNumber {
         write!(f, "{}", name)
     }
 }
-
+// Now that I have implemented ToString, I qualify for the generic
+// implementation of display
 impl fmt::Display for VersionNumber {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let last = self.0.len() - 1;
@@ -35,6 +36,20 @@ impl fmt::Display for VersionNumber {
         }
     }
 }
+
+// dont need to do this because i have implemented Display
+// use std::fmt::Write;
+// impl std::string::ToString for VersionNumber {
+//     fn to_string(&self) -> String {
+//         let last = self.0.len() - 1;
+//         let mut f = String::new();
+//         self.0.iter().enumerate().for_each(|(cnt, val)| {
+//             let end = if cnt == last { "" } else { "." };
+//             let r = write!(f, "{}{}", val, end);
+//         });
+//         f
+//     }
+// }
 
 impl VersionNumber {
 
