@@ -2,6 +2,8 @@
 //!
 //! Owned Package implementation. In the owned implementation
 //! the Package owns its fields (eg String instead of &str)
+pub mod interval;
+
 use crate::version_number::VersionNumber;
 use serde::{
     de::{self, Deserializer, Visitor},
