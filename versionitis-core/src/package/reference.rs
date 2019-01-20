@@ -9,6 +9,7 @@ pub struct Package<'a> {
     name: &'a str,
     value: Vec<u16>,
 }
+
 impl<'a> fmt::Debug for Package<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let name = self.to_string();

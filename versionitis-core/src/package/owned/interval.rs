@@ -1,15 +1,11 @@
 
+//! interval.rs
+//!
+//! Define an owned PackageInterval
 use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
 use serde::ser::{Serialize, SerializeStructVariant, Serializer};
 use serde_derive::{Deserialize, Serialize};
-
-/// Enum wrapping possible inputs to from_src
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PISrc<'a> {
-    Single(&'a str),
-    HalfOpen(&'a str, &'a str),
-    Open(&'a str, &'a str),
-}
+use crate::interval::PISrc;
 
 /// A package interval expresses a range of package versions
 /// using  Interval<T>, where T = package

@@ -6,8 +6,8 @@ use crate::{errors::VersionitisError, interval::Interval, package::owned::Packag
 use serde::ser::{Serialize, SerializeStructVariant, Serializer};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
-use crate::package::owned::interval::{PackageInterval, PISrc};
-
+use crate::package::owned::interval::{PackageInterval};
+use crate::interval::PISrc;
 
 
 pub type IntervalSet = HashSet<PackageInterval>;

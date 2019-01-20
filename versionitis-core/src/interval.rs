@@ -2,8 +2,16 @@
 //!
 //! Define an enum which represents an interval of
 //! generic type T.
-use serde_derive::{Deserialize};
 use std::{fmt::Debug, hash::Hash};
+use serde_derive::{Deserialize, Serialize};
+
+/// Enum wrapping possible inputs to PackageInterval::from_src
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PISrc<'a> {
+    Single(&'a str),
+    HalfOpen(&'a str, &'a str),
+    Open(&'a str, &'a str),
+}
 
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
