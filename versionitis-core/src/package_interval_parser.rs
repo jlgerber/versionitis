@@ -1,14 +1,13 @@
 //! package_interval_parser.rs
 //!
-//! set up parser
+//! parse package version range strs, converting them to PackageIntervals
 //!
-use pest::Parser;
-use std::fmt;
-use std::str::FromStr;
 use crate::errors::VersionitisError;
 use crate::package::owned::interval::PackageInterval;
 use crate::interval::Range;
+use pest::Parser;
 use pest_derive::Parser;
+
 
 // The pest parser is not exposed directly.
 #[derive(Parser)]
@@ -18,10 +17,16 @@ struct _PackageIntervalParser;
 // IndexParser is a convenience struct which provides a parse method that is more suited
 // to the api than the raw pest _IndexParser.
 
-struct PackageIntervalParser;
+/// Parse package intervals from strs.
+///
+/// # Example
+///
+/// ```
+/// let foo_version_range = PackageIntervalParser::parse("foo=1.2.3<2.0.0");
+///
+pub struct PackageIntervalParser;
 
 impl PackageIntervalParser {
-
     /// parse an elasticsearch index, of the form ```name-YYYY.MM.DD``` and return
     /// a Result - either an Ok Index instance, or an Err String.
     pub fn parse(input: &str ) -> Result<PackageInterval, VersionitisError> {
@@ -47,7 +52,7 @@ impl PackageIntervalParser {
                                 Rule::name => {
                                     name = Some(single_span.as_str());
                                 }
-                                Rule::version => {
+                                Rule::version_a => {
                                     version = Some(single_span.as_str());
                                 }
                                 _ => {}
@@ -157,7 +162,7 @@ mod test {
 
     #[test]
     fn half_open_interval_spaces() {
-        let test = PackageIntervalParser::parse("foo=1.2.3 < 2.0.0");
+        let test = PackageIntervalParser::parse("foo = 1.2.3 < 2.0.0");
         let result = PI::from_range(&HalfOpen("foo-1.2.3","foo-2.0.0"));
         assert_eq!(test, result);
     }
@@ -169,9 +174,10 @@ mod test {
         assert_eq!(test, result);
     }
 
+
     #[test]
     fn open_interval_spaces() {
-        let test = PackageIntervalParser::parse("foo=1.2.3 <= 2.0.0");
+        let test = PackageIntervalParser::parse("foo = 1.2.3 <= 2.0.0");
         let result = PI::from_range(&Open("foo-1.2.3","foo-2.0.0"));
         assert_eq!(test, result);
     }
