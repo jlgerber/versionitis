@@ -94,6 +94,10 @@ impl Package {
     pub fn version(&self) -> String {
         self.version.to_string()
     }
+    pub fn version_number(&self) -> &VersionNumber {
+        &self.version
+    }
+
     /// Construct a Package from a name and a VersionNumber instance.
     pub fn new<T: Into<String>>(name: T, version: VersionNumber) -> Self {
         Self {

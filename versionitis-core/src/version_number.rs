@@ -1,6 +1,7 @@
 use crate::errors::VersionitisError;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
+use std::string::ToString;
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize, Hash, Clone)]
@@ -17,25 +18,34 @@ impl fmt::Debug for VersionNumber {
         write!(f, "{}", name)
     }
 }
+
+impl fmt::Display for VersionNumber {
+     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let r = write!(f, "{}", self.0.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("."));
+        r
+     }
+}
+
+
 // Now that I have implemented ToString, I qualify for the generic
 // implementation of display
-impl fmt::Display for VersionNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let last = self.0.len() - 1;
-        let mut err = None;
-        self.0.iter().enumerate().for_each(|(cnt, val)| {
-            let end = if cnt == last { "" } else { "." };
-            let r = write!(f, "{}{}", val, end);
-            if r.is_err() {
-                err = Some(r)
-            };
-        });
-        match err {
-            None => Ok(()),
-            Some(err) => err,
-        }
-    }
-}
+// impl fmt::Display for VersionNumber {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         let last = self.0.len() - 1;
+//         let mut err = None;
+//         self.0.iter().enumerate().for_each(|(cnt, val)| {
+//             let end = if cnt == last { "" } else { "." };
+//             let r = write!(f, "{}{}", val, end);
+//             if r.is_err() {
+//                 err = Some(r)
+//             };
+//         });
+//         match err {
+//             None => Ok(()),
+//             Some(err) => err,
+//         }
+//     }
+// }
 
 // dont need to do this because i have implemented Display
 // use std::fmt::Write;

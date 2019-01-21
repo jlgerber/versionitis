@@ -16,8 +16,8 @@ pub enum Range<'a> {
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
 /// and upper bounds are inclusive.
-#[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, PartialEq, Eq, Hash /*, Deserialize*/)]
+//#[serde(rename_all = "snake_case")]
 pub enum Interval<T: Eq + Ord + Debug + Hash> {
     Single(T),
     HalfOpen { start: T, end: T },

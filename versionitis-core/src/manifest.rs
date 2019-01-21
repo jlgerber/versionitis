@@ -2,22 +2,16 @@
 //!
 //! stores package dependencies
 //!
-use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
-//use serde::ser::{Serialize, SerializeStructVariant, Serializer};
+use crate::{errors::VersionitisError, interval_map::IntervalMap, package::owned::Package};
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashSet;
 use crate::package::owned::interval::{PackageInterval};
-//use crate::interval::Range;
-
-
-pub type IntervalSet = HashSet<PackageInterval>;
 
 /// A manifest stores a set of dependencies for a named package.
 /// The dependencies are modeled as a HashSet<Interval<Package>>.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Manifest {
     name: String,
-    dependencies: IntervalSet,
+    dependencies: IntervalMap,
 }
 
 impl Manifest {
@@ -34,7 +28,7 @@ impl Manifest {
     {
         Self {
             name: name.into(),
-            dependencies: IntervalSet::new(),
+            dependencies: IntervalMap::new(),
         }
     }
 
@@ -58,38 +52,28 @@ impl Manifest {
                 package_name.to_string(),
             ));
         }
-        self.dependencies.insert(interval);
+        self.dependencies.insert(interval.package_name().to_string(), interval);
         Ok(())
     }
 
     /// Test whether a manifest has a package as a dependency. This method is
     /// only concerned with a package name. It will match any version
     pub fn depends_on(&self, name: &str) -> bool {
-        for dep in &self.dependencies {
-            let found = match dep {
-                Interval::Single(ref v) => name == v.name(),
-                // shouldn't need to test both start and end since
-                // the package name should be guaranteed to be the same
-                Interval::HalfOpen { ref start, .. } => name == start.name(),
-
-                Interval::Open { ref start, .. } => name == start.name(),
-            };
-            if found {
-                return true;
-            }
-        }
-        false
+        self.dependencies.contains_key(name)
+        // for (package, _dep) in self.dependencies.iter() {
+        //     if name == package {
+        //         return true;
+        //     }
+        // }
+        // false
     }
 
-    /// Test whether a manifest has a particular versioned packaage as a
+    /// Test whether a manifest has a particular versioned package as a
     /// dependency. For intervals, this means that the Package is contained within.
     pub fn depends_on_package(&self, package: &Package) -> bool {
-        for dep in &self.dependencies {
-            let found = dep.contains(package);
-            if found {
-                return true;
-            }
-        }
+        if let Some(dep) = self.dependencies.get(package.name()){
+            return dep.contains(package.version_number())
+        };
         false
     }
 }
@@ -218,13 +202,13 @@ dependencies:
         const MANIFEST_NEW: &'static str = r#"---
 name: fred-1.0.0
 dependencies:
-  - bla: '0.1.0<=1.0.0'
-  - foo: '0.1.0'
-  - bar: '0.1.0<1.0.0'"#;
+  bla: '0.1.0<=1.0.0'
+  foo: '0.1.0'
+  bar: '0.1.0<1.0.0'"#;
 
         #[test]
         fn deserialize_manifest() {
-            let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST);
+            let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST_NEW);
             match result {
                 Err(e) => {
                     let e_conv: VersionitisError = e.into();
