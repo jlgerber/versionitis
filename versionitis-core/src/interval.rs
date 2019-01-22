@@ -16,15 +16,15 @@ pub enum Range<'a> {
 /// Define an Interval enum which may be a Single value, HalfOpen, or Open.
 /// A HalfOpen value's lower bound is inclusive, whereas an Open bound's lower
 /// and upper bounds are inclusive.
-#[derive(Debug, PartialEq, Eq, Hash /*, Deserialize*/)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone /*, Deserialize*/)]
 //#[serde(rename_all = "snake_case")]
-pub enum Interval<T: Eq + Ord + Debug + Hash> {
+pub enum Interval<T: Eq + Ord + Debug + Hash + Clone> {
     Single(T),
     HalfOpen { start: T, end: T },
     Open { start: T, end: T },
 }
 
-impl<T: Eq + Ord + Debug + Hash> Interval<T> {
+impl<T: Eq + Ord + Debug + Hash + Clone> Interval<T> {
     /// Test whether a the Interval contains a specific
     /// value T.
     pub fn contains(&self, value: &T) -> bool {

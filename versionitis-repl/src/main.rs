@@ -169,16 +169,16 @@ impl RepoRepl {
 
     fn serialize_manifest(&self) -> Result<(),VersionitisError>  {
         use versionitis::manifest::{Manifest};
-        use versionitis::package::owned::interval::PackageInterval;
+        use versionitis::package::owned::interval::VersionNumberInterval;
         use versionitis::interval::Range::*;
-        type PI=PackageInterval;
-        let mut manifest = Manifest::new("fred-1.0.0");
-        let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-        let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-        let interval3 = PI::from_range(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
-        manifest.add_dependency(interval1).unwrap();
-        manifest.add_dependency(interval2).unwrap();
-        manifest.add_dependency(interval3).unwrap();
+        type VI=VersionNumberInterval;
+        let mut manifest = Manifest::new("1.0.0");
+        let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+        let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+        let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
+        manifest.add_dependency("foo", interval1).unwrap();
+        manifest.add_dependency("bar", interval2).unwrap();
+        manifest.add_dependency("bla", interval3).unwrap();
 
         let f = File::create("/tmp/manifest.yaml")?;
         serde_yaml::to_writer(f, &manifest)?;

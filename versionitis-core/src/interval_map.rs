@@ -3,23 +3,32 @@ use crate::{errors::VersionitisError, interval::Interval, package::owned::Packag
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{ HashMap, hash_map::{ Keys, Values, ValuesMut, Iter, IterMut, Entry, Drain, RandomState } };
-use crate::package::owned::interval::{PackageInterval};
+use crate::package::owned::interval::{VersionNumberInterval};
 use std::borrow::Borrow;
 use std::fmt;
 use std::cmp::{ PartialEq, Eq };
 
-pub type _IntervalMap = HashMap<String, PackageInterval>;
+pub type _IntervalMap = HashMap<String, VersionNumberInterval>;
+
+#[derive(Deserialize, Serialize)]
+pub struct IntervalMap(_IntervalMap);
 
 impl PartialEq for IntervalMap {
-     fn eq(&self, other: &IntervalMap) -> bool {
-         self.0.eq(&other.0)
-     }
+    fn eq(&self, other: &IntervalMap) -> bool {
+        if self.len() == other.len() {
+            for key in self.keys() {
+                if !other.contains_key(key) { return false; }
+                if self.get(key) != other.get(key) { return false; }
+            }
+            return true;
+        }
+        false
+
+    }
 }
 
 impl Eq for IntervalMap {}
 
-#[derive(Deserialize)]
-pub struct IntervalMap(_IntervalMap);
 
 impl fmt::Debug for IntervalMap {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -54,29 +63,29 @@ impl IntervalMap {
         self.0.shrink_to_fit()
     }
 
-    pub fn keys(&self) -> Keys<String, PackageInterval> {
+    pub fn keys(&self) -> Keys<String, VersionNumberInterval> {
         self.0.keys()
     }
 
     /// An iterator visiting all values in arbitrary order.
-    /// The iterator element type is &'a PackageInterval.
-    pub fn values(&self) -> Values<String, PackageInterval> {
+    /// The iterator element type is &'a VersionNumberInterval.
+    pub fn values(&self) -> Values<String, VersionNumberInterval> {
         self.0.values()
     }
 
-    pub fn values_mut(&mut self) -> ValuesMut<String, PackageInterval> {
+    pub fn values_mut(&mut self) -> ValuesMut<String, VersionNumberInterval> {
         self.0.values_mut()
     }
 
-    pub fn iter(&self) -> Iter<String, PackageInterval> {
+    pub fn iter(&self) -> Iter<String, VersionNumberInterval> {
         self.0.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<String, PackageInterval> {
+    pub fn iter_mut(&mut self) -> IterMut<String, VersionNumberInterval> {
         self.0.iter_mut()
     }
 
-    pub fn entry(&mut self, key: String) -> Entry<String, PackageInterval> {
+    pub fn entry(&mut self, key: String) -> Entry<String, VersionNumberInterval> {
         self.0.entry(key)
     }
 
@@ -84,7 +93,7 @@ impl IntervalMap {
         self.0.len()
     }
 
-    pub fn drain(&mut self) -> Drain<String, PackageInterval> {
+    pub fn drain(&mut self) -> Drain<String, VersionNumberInterval> {
         self.0.drain()
     }
 
@@ -92,7 +101,7 @@ impl IntervalMap {
         self.0.clear()
     }
 
-    pub fn get(&self, k: &str) -> Option<&PackageInterval> {
+    pub fn get(&self, k: &str) -> Option<&VersionNumberInterval> {
         self.0.get(k)
     }
 
@@ -100,7 +109,7 @@ impl IntervalMap {
         self.0.contains_key(k)
     }
 
-    pub fn get_mut(&mut self, k: &str) -> Option<&mut PackageInterval> {
+    pub fn get_mut(&mut self, k: &str) -> Option<&mut VersionNumberInterval> {
         self.0.get_mut(k)
     }
 
@@ -108,16 +117,17 @@ impl IntervalMap {
     /// this key present, None is returned.If the map did have this key
     /// present, the value is updated, and the old value is returned.
     /// The key is not updated, though
-    pub fn insert<K: Into<String>>(&mut self, k: K, v: PackageInterval) -> Option<PackageInterval> {
+    pub fn insert<K: Into<String>>(&mut self, k: K, v: VersionNumberInterval) -> Option<VersionNumberInterval> {
         self.0.insert(k.into(), v)
     }
 
-    pub fn remove(&mut self, k: &str) -> Option<PackageInterval> {
+    pub fn remove(&mut self, k: &str) -> Option<VersionNumberInterval> {
         self.0.remove(k)
     }
 
 }
 
+/*
 impl Serialize for IntervalMap {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -148,5 +158,25 @@ impl Serialize for IntervalMap {
         //         state.end()
         //     }
         // }
+    }
+}
+*/
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::interval::Range;
+
+    #[test]
+    fn can_serialize_intervalmap() {
+        let mut iv = IntervalMap::new();
+        let vi = VersionNumberInterval::from_range(&Range::Open("1.2.3", "2.0.0")).unwrap();
+        let vi2 = VersionNumberInterval::from_range(&Range::Open("2.2.3", "3.0.0")).unwrap();
+
+        iv.insert("fred", vi);
+        iv.insert("barney", vi2);
+        let result = serde_yaml::to_string(&iv);
+        assert!(result.is_ok());
+        println!("{:?}",result);
     }
 }

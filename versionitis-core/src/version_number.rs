@@ -5,80 +5,38 @@ use std::string::ToString;
 
 /// VersionNumber implements Versionable trait. A VersionNumber may be comprised of one or more u16 digits
 #[derive(PartialEq, PartialOrd, Eq, Ord, Deserialize, Serialize, Hash, Clone)]
-pub struct VersionNumber(Vec<u16>);
+pub struct VersionNumber {
+    value: Vec<u16>,
+    name: String,
+}
 
 impl fmt::Debug for VersionNumber {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = self
-            .0
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join(".");
-        write!(f, "{}", name)
+        write!(f, "{}", self.name)
     }
 }
 
+//self.0.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".")
 impl fmt::Display for VersionNumber {
-     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let r = write!(f, "{}", self.0.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("."));
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let r = write!(f, "{}", self.name);
         r
-     }
+    }
 }
 
-
-// Now that I have implemented ToString, I qualify for the generic
-// implementation of display
-// impl fmt::Display for VersionNumber {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         let last = self.0.len() - 1;
-//         let mut err = None;
-//         self.0.iter().enumerate().for_each(|(cnt, val)| {
-//             let end = if cnt == last { "" } else { "." };
-//             let r = write!(f, "{}{}", val, end);
-//             if r.is_err() {
-//                 err = Some(r)
-//             };
-//         });
-//         match err {
-//             None => Ok(()),
-//             Some(err) => err,
-//         }
-//     }
-// }
-
-// dont need to do this because i have implemented Display
-// use std::fmt::Write;
-// impl std::string::ToString for VersionNumber {
-//     fn to_string(&self) -> String {
-//         let last = self.0.len() - 1;
-//         let mut f = String::new();
-//         self.0.iter().enumerate().for_each(|(cnt, val)| {
-//             let end = if cnt == last { "" } else { "." };
-//             let r = write!(f, "{}{}", val, end);
-//         });
-//         f
-//     }
-// }
-
 impl VersionNumber {
-
-    // fn construct_name(value: &Vec<u16>) -> String {
-    //     let version = value
-    //         .iter()
-    //         .map(|x| x.to_string())
-    //         .collect::<Vec<String>>()
-    //         .join(".");
-    //     format!("{}", version)
-    // }
-
     /// Construct a VersionNumber from a vector of u16
-    pub fn new(input: Vec<u16>) -> Self {
-        VersionNumber(input)
+    pub fn new(value: Vec<u16>) -> Self {
+        let name = value.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(".");
+        VersionNumber{value, name}
     }
 
     pub fn value(&self) -> Vec<u16> {
-        self.0.clone()
+        self.value.clone()
+    }
+
+    pub fn name(&self) -> &str {
+        self.name.as_str()
     }
 
     /// construct a VersionNumber with 3 u16 values
@@ -93,8 +51,13 @@ impl VersionNumber {
         Self::new(value)
     }
 
-    /// Not the FromString trait because of lifetime requirements
+    /// Deprecated. Prefer from_str()
     pub fn from_string(s: &str) -> Result<Self, VersionitisError> {
+        Self::from_str(s)
+    }
+
+    /// Not the FromString trait because of lifetime requirements
+    pub fn from_str(s: &str) -> Result<Self, VersionitisError> {
         // todo support variants
 
         let mut result: Vec<u16> = Vec::new();

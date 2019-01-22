@@ -4,7 +4,7 @@
 //!
 use crate::{errors::VersionitisError, interval_map::IntervalMap, package::owned::Package};
 use serde_derive::{Deserialize, Serialize};
-use crate::package::owned::interval::{PackageInterval};
+use crate::package::owned::interval::{ VersionNumberInterval };
 
 /// A manifest stores a set of dependencies for a named package.
 /// The dependencies are modeled as a HashSet<Interval<Package>>.
@@ -45,14 +45,14 @@ impl Manifest {
     /// let interval = halfopen_from_strs("bar-0.1.0", "bar-1.0.0")?;
     /// manifest.add_dependency(interval)?;
     /// ```
-    pub fn add_dependency(&mut self, interval: PackageInterval) -> Result<(), VersionitisError> {
-        let package_name = interval.package_name();
-        if self.depends_on(package_name) {
+    pub fn add_dependency<I: Into<String>>(&mut self, package_name: I, interval: VersionNumberInterval) -> Result<(), VersionitisError> {
+        let package_name = package_name.into();
+        if self.depends_on(package_name.as_str()) {
             return Err(VersionitisError::DuplicatePackageDependency(
-                package_name.to_string(),
+                package_name
             ));
         }
-        self.dependencies.insert(interval.package_name().to_string(), interval);
+        self.dependencies.insert(package_name, interval);
         Ok(())
     }
 
@@ -88,13 +88,13 @@ mod tests {
 
         #[test]
         fn get_package_spec() {
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
 
             let name = manifest.package();
             assert_eq!(name, "fred-1.0.0");
@@ -102,41 +102,41 @@ mod tests {
 
         #[test]
         fn add_dependencies() {
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
             assert_eq!(manifest.dependencies.len(), 2);
         }
 
         #[test]
         fn add_dependencies_src() {
             // make this a bit more ergonomic to type
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
             assert_eq!(manifest.dependencies.len(), 2);
         }
 
         #[test]
         fn cannot_add_duplicate_dependency() {
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            let interval3 = PI::from_range(&Open("bar-1.1.0", "bar-2.0.0")).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            let interval3 = VI::from_range(&Open("1.1.0", "2.0.0")).unwrap();
 
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
-            let result = manifest.add_dependency(interval3);
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("foof", interval2).unwrap();
+            let result = manifest.add_dependency("foo", interval3);
             assert!(
                 result.is_err(),
                 "should return err when attempting to add duplicate package"
@@ -145,15 +145,15 @@ mod tests {
 
         #[test]
         fn depends_on() {
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            let interval3 = PI::from_range(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
-            manifest.add_dependency(interval3).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
+            manifest.add_dependency("bla", interval3).unwrap();
             assert!(manifest.depends_on("foo"));
             assert!(manifest.depends_on("bar"));
             assert!(manifest.depends_on("bla"));
@@ -163,15 +163,15 @@ mod tests {
         #[test]
         fn depends_on_package() {
             let pfs = |n: &str| Package::from_str(n).unwrap();
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            let interval3 = PI::from_range(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
-            manifest.add_dependency(interval3).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
+            manifest.add_dependency("bla", interval3).unwrap();
             // single
             assert!(manifest.depends_on_package(&pfs("foo-0.1.0")));
             assert!(!manifest.depends_on_package(&pfs("foo-1.1.0")));
@@ -208,31 +208,41 @@ dependencies:
 
         #[test]
         fn deserialize_manifest() {
+            type VI = VersionNumberInterval;
+            use self::Range::*;
             let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST_NEW);
             match result {
                 Err(e) => {
                     let e_conv: VersionitisError = e.into();
                     assert_eq!(e_conv, VersionitisError::UnknownPackage("foo".to_string()))},
-                Ok(s) => {}
+                Ok(s) => {
+                    let mut manifest = Manifest::new("fred-1.0.0");
+                    let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+                    let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+                    let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
+                    manifest.add_dependency("foo", interval1).unwrap();
+                    manifest.add_dependency("bar", interval2).unwrap();
+                    manifest.add_dependency("bla", interval3).unwrap();
+                    assert_eq!(s, manifest);
+                }
             };
-            //assert_eq!(result, Ok(Manifest::new("fred-1.0.0")))
             //assert!(result.is_ok() );
         }
 
 
         #[test]
-        fn serialize_manifest() {
+        fn serialize_the_manifest() {
             // create a manifest
             //zlet pfs = |n: &str| Package::from_str(n).unwrap();
-            type PI = PackageInterval;
+            type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = PI::from_range(&Single("foo-0.1.0")).unwrap();
-            let interval2 = PI::from_range(&HalfOpen("bar-0.1.0", "bar-1.0.0")).unwrap();
-            let interval3 = PI::from_range(&Open("bla-0.1.0", "bla-1.0.0")).unwrap();
-            manifest.add_dependency(interval1).unwrap();
-            manifest.add_dependency(interval2).unwrap();
-            manifest.add_dependency(interval3).unwrap();
+            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
+            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
+            let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
+            manifest.add_dependency("foo", interval1).unwrap();
+            manifest.add_dependency("bar", interval2).unwrap();
+            manifest.add_dependency("bla", interval3).unwrap();
             //serialize the manifest to a string
             let result = serde_yaml::to_string(&manifest);
             assert!(result.is_ok());

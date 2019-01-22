@@ -1,0 +1,19 @@
+alpha      = _{ 'a'..'z' | 'A'..'Z' }
+digit      = _{ '0'..'9' }
+space      = _{ ( " " )* }
+//name       = { (alpha | digit | "_" )+ }
+version_a  = { digit+ ~ ( "." ~ digit+ )* }
+version_b  = { digit+ ~ ( "." ~ digit+ )* }
+quote = {"'" | "\"" }
+
+// single     = { SOI ~ quote ~ version_a ~ quote ~ EOI }
+// half_open  = { SOI ~ quote ~ version_a ~ space  ~ "<" ~ space ~ version_b ~ quote ~ EOI }
+// open       = { SOI ~ quote ~ version_a ~ space  ~ "<=" ~ space ~ version_b ~ quote ~ EOI }
+// half_open2 = { SOI ~ quote ~ version_a ~ space  ~ "^" ~ quote ~ EOI }
+
+single     = { SOI ~ version_a  ~ EOI }
+half_open  = { SOI ~ version_a ~ space ~ "<" ~ space ~ version_b ~ EOI }
+open       = { SOI ~ version_a ~ space ~ "<=" ~ space ~ version_b ~ EOI }
+half_open2 = { SOI ~ version_a ~ space ~ "^" ~ EOI }
+
+ident_list = _{ open | half_open | half_open2 | single  }
