@@ -169,7 +169,7 @@ impl RepoRepl {
 
     fn serialize_manifest(&self) -> Result<(),VersionitisError>  {
         use versionitis::manifest::{Manifest};
-        use versionitis::package::owned::interval::VersionNumberInterval;
+        use versionitis::version_number_interval::VersionNumberInterval;
         use versionitis::interval::Range::*;
         type VI=VersionNumberInterval;
         let mut manifest = Manifest::new("1.0.0");

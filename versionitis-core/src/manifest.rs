@@ -4,7 +4,7 @@
 //!
 use crate::{errors::VersionitisError, interval_map::IntervalMap, package::owned::Package};
 use serde_derive::{Deserialize, Serialize};
-use crate::package::owned::interval::{ VersionNumberInterval };
+use crate::version_number_interval::{ VersionNumberInterval };
 
 /// A manifest stores a set of dependencies for a named package.
 /// The dependencies are modeled as a HashSet<Interval<Package>>.
@@ -188,6 +188,7 @@ mod tests {
             assert!(!manifest.depends_on_package(&pfs("blargybalargy-1.0.0")));
         }
 
+/*
         const MANIFEST: &'static str = r#"---
 name: fred-1.0.0
 dependencies:
@@ -198,7 +199,7 @@ dependencies:
   - half_open:
       start: bar-0.1.0
       end: bar-1.0.0"#;
-
+*/
         const MANIFEST_NEW: &'static str = r#"---
 name: fred-1.0.0
 dependencies:
@@ -226,14 +227,11 @@ dependencies:
                     assert_eq!(s, manifest);
                 }
             };
-            //assert!(result.is_ok() );
         }
 
 
         #[test]
         fn serialize_the_manifest() {
-            // create a manifest
-            //zlet pfs = |n: &str| Package::from_str(n).unwrap();
             type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");

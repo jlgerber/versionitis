@@ -3,7 +3,7 @@
 //! parse package version range strs, converting them to VersionNumberIntervals
 //!
 use crate::errors::VersionitisError;
-use crate::package::owned::interval::VersionNumberInterval;
+use crate::version_number_interval::VersionNumberInterval;
 use crate::interval::Range;
 use pest::Parser;
 use pest_derive::Parser;
