@@ -1,4 +1,14 @@
 # Design
+## Components
+
+File | Description
+--- | ---
+errors | contains VersionitisError, which implements Failure
+interval | A generic struct (Interval<T>) representing an interval of some sort
+interval_map | contains IntervalMap, which maps a String to an Interval<VersionNumber>
+package |
+range | contains Range enum which is used to characterize input intervals
+
 - repo stores all packages and their versions
 - manifest stores package version and dependency rnges
 - package_map stores array of ints corresponding with SAT solver requirements
