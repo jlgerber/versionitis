@@ -2,16 +2,14 @@
 //! interval.rs
 //!
 //! Define an owned PackageInterval
+// NOT USED CURRENTLY
+
 use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
-//use serde::ser::{Serialize, SerializeStructVariant, Serializer};
-//use serde_derive::{Deserialize, Serialize};
-// TODO: chance PackagetInterval to be Interval<VersionNumber>
-// TODO: change package_ineterval.pest to remove quotes and package name
 use crate::interval::Range;
 use std::fmt;
 use serde::{
     de::{self, Deserializer, Visitor},
-    ser::{Serialize,SerializeStructVariant, Serializer},
+    ser::{Serialize, Serializer},
     Deserialize,
 };
 use crate::vernum_interval_parser::VerNumIntervalParser;
@@ -193,7 +191,9 @@ mod test {
     fn serialize_single_interval() {
         let interval = VersionNumberInterval::from_range(&Range::Single("1.2.3")).unwrap();
         let result = serde_yaml::to_string(&interval);
+        let expect = "---\n1.2.3".to_string();
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), expect);
     }
 
     #[test]
@@ -208,7 +208,9 @@ mod test {
     fn serialize_halfopen_interval() {
         let interval = VersionNumberInterval::from_range(&Range::HalfOpen("1.2.3", "2.0.0")).unwrap();
         let result = serde_yaml::to_string(&interval);
+        let expect = "---\n1.2.3<2.0.0".to_string();
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), expect);
     }
 
     #[test]
@@ -222,7 +224,9 @@ mod test {
     fn serialize_open_interval() {
         let interval = VersionNumberInterval::from_range(&Range::Open("1.2.3", "2.0.0")).unwrap();
         let result = serde_yaml::to_string(&interval);
+        let expect = "---\n1.2.3<=2.0.0".to_string();
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), expect);
     }
 
     #[test]
