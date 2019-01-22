@@ -147,7 +147,7 @@ mod test {
 
     #[test]
     fn half_open_interval_spaces() {
-        let test = VerNumIntervalParser::parse("1.2.3 < 2.0.0");
+        let test = VerNumIntervalParser::parse(" 1.2.3 < 2.0.0  ");
         let result = PI::from_range(&HalfOpen("1.2.3","2.0.0"));
         assert_eq!(test, result);
     }
@@ -161,7 +161,7 @@ mod test {
 
     #[test]
     fn open_interval_spaces() {
-        let test = VerNumIntervalParser::parse("1.2.3 <= 2.0.0");
+        let test = VerNumIntervalParser::parse("  1.2.3 <= 2.0.0  ");
         let result = PI::from_range(&Open("1.2.3","2.0.0"));
         assert_eq!(test, result);
     }
