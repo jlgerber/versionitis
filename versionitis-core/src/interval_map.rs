@@ -1,10 +1,9 @@
 
-use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
-use serde::ser::{Serialize, SerializeMap, Serializer};
+//use crate::{errors::VersionitisError, interval::Interval, package::owned::Package};
+//use serde::ser::{Serialize, SerializeMap, Serializer};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{ HashMap, hash_map::{ Keys, Values, ValuesMut, Iter, IterMut, Entry, Drain, RandomState } };
 use crate::version_number_interval::{VersionNumberInterval};
-use std::borrow::Borrow;
 use std::fmt;
 use std::cmp::{ PartialEq, Eq };
 
