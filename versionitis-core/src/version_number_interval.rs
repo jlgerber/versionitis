@@ -9,11 +9,17 @@ use serde::{
 };
 use crate::vernum_interval_parser::VerNumIntervalParser;
 use crate::version_number::VersionNumber;
-
+use std::fmt::Display;
 
 /// an Interval of VersionNumbers. Interval is an enum whose variants
 /// define various intervals between VersionNumbers.
 pub type VersionNumberInterval = Interval<VersionNumber>;
+
+impl Display for VersionNumberInterval {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_range())
+    }
+}
 
 impl VersionNumberInterval {
     /// Retrieve the package name for the PackageInterval as a &str.
