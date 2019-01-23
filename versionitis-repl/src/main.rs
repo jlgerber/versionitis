@@ -1,4 +1,4 @@
-use versionitis::Repo;
+use versionitis::PackageRepo;
 use versionitis::traits::TrackPackages;
 use versionitis::errors::VersionitisError;
 use std::fs::File;
@@ -8,15 +8,15 @@ use versionitis::manifest::Manifest;
 
 type Feedback = Option<Result<String, String>>;
 
-struct RepoRepl {
-    repo: Repo,
+struct PackageRepoRepl {
+    repo: PackageRepo,
     feedback:Feedback,
 }
 
-impl RepoRepl {
+impl PackageRepoRepl {
     fn new() -> Self {
         Self {
-            repo: Repo::new(),
+            repo: PackageRepo::new(),
             feedback: None,
         }
     }
@@ -138,7 +138,7 @@ impl RepoRepl {
                 }
                 self.feedback = Some(Ok(format!("loaded: {}", input)));
                 let f = std::fs::File::open(input)?;
-                let r: Repo = serde_yaml::from_reader(f)?;
+                let r: PackageRepo = serde_yaml::from_reader(f)?;
                 self.repo = r;
                 Ok(())
             }
@@ -292,6 +292,6 @@ impl RepoRepl {
 
 
 fn main() {
-    let mut repo = RepoRepl::new();
+    let mut repo = PackageRepoRepl::new();
     repo.run();
 }

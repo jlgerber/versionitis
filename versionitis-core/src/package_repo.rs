@@ -9,14 +9,14 @@ use std::{collections::HashMap, iter::Iterator};
 // type alias
 type PackageMap = HashMap<String, Vec<Package>>;
 
-/// The Repo stores package versions for each package
+/// The PackageRepo stores package versions for each package
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub struct Repo {
+pub struct PackageRepo {
     pub packages: PackageMap,
     unchecked: bool, // have we called add_version_nocheck
 }
 
-impl Repo {
+impl PackageRepo {
     /// create a new package repository.
     pub fn new() -> Self {
         Self {
@@ -93,7 +93,7 @@ impl Repo {
     }
 }
 
-impl TrackPackages for Repo {
+impl TrackPackages for PackageRepo {
     type AddReturns = ();
     type GetReturns = Package;
     type Errors = VersionitisError;
@@ -133,8 +133,8 @@ packages:
     - fred-0.3.0
 unchecked: false"#;
 
-    fn setup_repo(package_name: &str) -> Repo {
-        let mut repo = Repo::new();
+    fn setup_repo(package_name: &str) -> PackageRepo {
+        let mut repo = PackageRepo::new();
 
         repo.add_version(package_name, "0.1.0").unwrap();
         repo.add_version(package_name, "0.2.0").unwrap();
@@ -155,7 +155,7 @@ unchecked: false"#;
 
     #[test]
     fn setup_nocheck_allows_dups_and_unordered_inserts() {
-        let mut repo = Repo::new();
+        let mut repo = PackageRepo::new();
         let package_name = "fred";
         repo.add_version_unchecked(package_name, "0.2.0").unwrap();
         repo.add_version_unchecked(package_name, "0.1.0").unwrap();
@@ -168,7 +168,7 @@ unchecked: false"#;
 
     #[test]
     fn dedup_sort_cleans_up() {
-        let mut repo = Repo::new();
+        let mut repo = PackageRepo::new();
         let package_name = "fred";
         // make a mess
         repo.add_version_unchecked(package_name, "0.2.0").unwrap();
@@ -194,7 +194,7 @@ unchecked: false"#;
 
     #[test]
     fn can_serialize_to_yaml() {
-        let mut repo = Repo::new();
+        let mut repo = PackageRepo::new();
         let package_name = "fred";
         // make a mess
         repo.add_version_unchecked(package_name, "0.2.0").unwrap();
@@ -213,7 +213,7 @@ unchecked: false"#;
 
     #[test]
     fn can_deserialize_from_yaml() {
-        let mut repo = Repo::new();
+        let mut repo = PackageRepo::new();
         let package_name = "fred";
         // make a mess
         repo.add_version_unchecked(package_name, "0.2.0").unwrap();
@@ -227,7 +227,7 @@ unchecked: false"#;
         // clean up
         repo.dedup_sort();
 
-        let deserialized: Repo = serde_yaml::from_str(&REPO).unwrap();
+        let deserialized: PackageRepo = serde_yaml::from_str(&REPO).unwrap();
         assert_eq!(deserialized, repo);
     }
 }
