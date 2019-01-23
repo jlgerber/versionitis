@@ -1,12 +1,18 @@
 
+//! interval_map.rs
+//!
+//! IntervalMap
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{ HashMap, hash_map::{ Keys, Values, ValuesMut, Iter, IterMut, Entry, Drain, RandomState } };
 use crate::version_number_interval::{VersionNumberInterval};
 use std::fmt;
 use std::cmp::{ PartialEq, Eq };
 
-pub type _IntervalMap = HashMap<String, VersionNumberInterval>;
 
+type _IntervalMap = HashMap<String, VersionNumberInterval>;
+
+/// IntervalMap newtype struct which presents a HashMap api while implementing
+/// Debug, PartialEq and Eq of the wrapped contents.
 #[derive(Deserialize, Serialize)]
 pub struct IntervalMap(_IntervalMap);
 
@@ -29,7 +35,12 @@ impl Eq for IntervalMap {}
 
 impl fmt::Debug for IntervalMap {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "IntervalMap")
+        write!(f, "{{\n")?;
+        for (k,v) in &self.0 {
+            write!(f, "\t{} => {},\n", k, v)?;
+        }
+        write!(f, "}}\n")?;
+        Ok(())
     }
 }
 
