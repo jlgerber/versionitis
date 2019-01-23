@@ -1,0 +1,7 @@
+alpha      = _{ 'a'..'z' | 'A'..'Z' }
+digit      = _{ '0'..'9' }
+piece    = _{(alpha | digit)+ ~ "_" }
+name     = { alpha ~ piece* ~ (alpha | digit)+ }
+version  = { digit+ ~ ( "." ~ digit+ )* }
+
+single     = _{ SOI ~ name ~ "-" ~ version ~ EOI }

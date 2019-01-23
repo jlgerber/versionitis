@@ -9,5 +9,6 @@ pub mod repo;
 pub mod vernum_interval_parser;
 pub mod interval_map;
 pub mod version_number_interval;
+pub mod package_version_parser;
 
 pub use crate::repo::Repo;
