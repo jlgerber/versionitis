@@ -193,7 +193,7 @@ unchecked: false"#;
     }
 
     #[test]
-    fn serialize() {
+    fn can_serialize_to_yaml() {
         let mut repo = Repo::new();
         let package_name = "fred";
         // make a mess
@@ -212,7 +212,7 @@ unchecked: false"#;
     }
 
     #[test]
-    fn deserialize_from_yaml() {
+    fn can_deserialize_from_yaml() {
         let mut repo = Repo::new();
         let package_name = "fred";
         // make a mess

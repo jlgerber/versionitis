@@ -95,28 +95,28 @@ mod tests {
     }
 
     #[test]
-    fn macrotest() {
+    fn can_generate_versnion_nubmer_via_vernum_macro() {
         let sv1 = vernum!(0.1.0).unwrap();
         let sv2 = VersionNumber::from_string("0.1.0").unwrap();
         assert_eq!(sv1, sv2);
     }
 
     #[test]
-    fn simple_equality() {
+    fn two_instances_with_same_inputs_are_equal() {
         let sv1 = VersionNumber::semver(0, 1, 0);
         let sv2 = VersionNumber::semver(0, 1, 0);
         assert_eq!(sv1, sv2);
     }
 
     #[test]
-    fn simple_inequality_lt() {
+    fn smaller_vernum_is_less_than_larger_vernum() {
         let sv1 = VersionNumber::semver(0, 0, 1);
         let sv2 = VersionNumber::semver(0, 1, 0);
         assert!(sv1 < sv2);
     }
 
     #[test]
-    fn simple_inequality_gt() {
+    fn larger_vernum_is_greater_than_smaller_vernum() {
         let sv1 = VersionNumber::semver(1, 0, 1);
         let sv2 = VersionNumber::semver(0, 1, 0);
         assert!(sv1 > sv2);
@@ -144,13 +144,7 @@ mod tests {
     }
 
     #[test]
-    fn version() {
-        let sv2 = VersionNumber::semver4(0, 1, 0, 1);
-        assert_eq!(sv2.to_string().as_str(), "0.1.0.1");
-    }
-
-    #[test]
-    fn to_str() {
+    fn implements_to_string() {
         let package = String::from("0.1.0.1");
         let sv = VersionNumber::semver4(0, 1, 0, 1);
         let result = sv.to_string();
@@ -158,7 +152,7 @@ mod tests {
     }
 
     #[test]
-    fn debug() {
+    fn implements_debug() {
         let package = String::from("0.1.0.1");
         let sv = VersionNumber::semver4(0, 1, 0, 1);
         let result = format!("{:?}", sv);
@@ -166,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn from_str() {
+    fn can_generate_versionnumber_from_str() {
         let package = String::from("0.1.0.1");
         let sv1 = VersionNumber::from_string(&package).unwrap();
         let sv2 = VersionNumber::semver4(0, 1, 0, 1);

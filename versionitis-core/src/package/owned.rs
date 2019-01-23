@@ -170,21 +170,21 @@ mod tests {
     }
 
     #[test]
-    fn macrotest() {
+    fn can_create_package_from_name_with_spaces_using_verison_macro() {
         let sv1 = version!(foo - 0.1.0);
         let sv2 = Package::from_str("foo-0.1.0");
         assert_eq!(sv1, sv2);
     }
 
     #[test]
-    fn base() {
+    fn can_create_package_using_from_str_function() {
         let package = String::from("fred-0.1.0.1");
         let sv1 = Package::from_str(&package).unwrap();
         assert_eq!(sv1.name(), "fred");
     }
 
     #[test]
-    fn simple_new() {
+    fn can_create_package_using_new_function_given_name_str_and_versionnumber() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 1, 0);
         let sv2 = Package::new(name.as_str(), VersionNumber::new(vec![0, 1, 0]));
@@ -192,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn simple_equality() {
+    fn packages_with_same_name_and_version_are_equal() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 1, 0);
         let sv2 = Package::semver(&name, 0, 1, 0);
@@ -200,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    fn simple_inequality_lt() {
+    fn package_with_same_name_and_small_version_less_than_other_package() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 0, 1);
         let sv2 = Package::semver(&name, 0, 1, 0);
@@ -208,7 +208,7 @@ mod tests {
     }
 
     #[test]
-    fn simple_inequality_gt() {
+    fn package_with_higher_version_greater_than_package_with_smaller_version() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 1, 0, 1);
         let sv2 = Package::semver(&name, 0, 1, 0);
@@ -216,7 +216,7 @@ mod tests {
     }
 
     #[test]
-    fn complex_inequality_lt() {
+    fn package_with_more_digits_in_version_ord_test_but_zero() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 1, 0);
         let sv2 = Package::semver4(&name, 0, 1, 0, 0);
@@ -224,7 +224,7 @@ mod tests {
     }
 
     #[test]
-    fn complex_inequality_lt2() {
+    fn package_with_more_digits_in_version_ord_test_more_digits_gt() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 1, 0);
         let sv2 = Package::semver4(&name, 0, 1, 0, 1);
@@ -232,7 +232,7 @@ mod tests {
     }
 
     #[test]
-    fn complex_inequality_gt() {
+    fn package_with_more_digits_in_version_ord_test_2() {
         let name = String::from("fred");
         let sv1 = Package::semver(&name, 0, 1, 1);
         let sv2 = Package::semver4(&name, 0, 1, 0, 1);
@@ -240,23 +240,14 @@ mod tests {
     }
 
     #[test]
-    fn version() {
+    fn can_convert_to_string() {
         let name = String::from("fred");
         let sv2 = Package::semver4(&name, 0, 1, 0, 1);
         assert_eq!(sv2.to_string().as_str(), "fred-0.1.0.1");
     }
 
     #[test]
-    fn to_str() {
-        let name = String::from("fred");
-        let package = String::from("fred-0.1.0.1");
-        let sv = Package::semver4(&name, 0, 1, 0, 1);
-        let result = sv.to_string();
-        assert_eq!(result, package);
-    }
-
-    #[test]
-    fn debug() {
+    fn pakage_implements_debug_trait() {
         let name = String::from("fred");
         let package = String::from("fred-0.1.0.1");
         let sv = Package::semver4(&name, 0, 1, 0, 1);
@@ -265,23 +256,24 @@ mod tests {
     }
 
     #[test]
-    fn from_str() {
+    fn can_convert_from_str() {
         let name = String::from("fred");
         let package = String::from("fred-0.1.0.1");
         let sv1 = Package::from_str(&package).unwrap();
         let sv2 = Package::semver4(&name, 0, 1, 0, 1);
         assert_eq!(sv1, sv2);
     }
+
     const YAML_PKG: &'static str = "---\nfred-0.1.2";
     #[test]
-    fn serialize_package() {
+    fn can_serialize_to_yaml() {
         let package = Package::from_str("fred-0.1.2").unwrap();
         let yaml = serde_yaml::to_string(&package).unwrap();
         assert_eq!(yaml, YAML_PKG);
     }
 
     #[test]
-    fn deserialize() {
+    fn can_deserialize_from_yaml() {
         let package: serde_yaml::Result<Package> = serde_yaml::from_str("fred-0.1.2");
         assert!(package.is_ok());
     }

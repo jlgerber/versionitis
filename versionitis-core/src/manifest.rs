@@ -87,7 +87,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn get_package_spec() {
+        fn can_retrieve_package_name_version() {
             type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
@@ -101,20 +101,7 @@ mod tests {
         }
 
         #[test]
-        fn add_dependencies() {
-            type VI = VersionNumberInterval;
-            use self::Range::*;
-            let mut manifest = Manifest::new("fred-1.0.0");
-            let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
-            let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
-            manifest.add_dependency("foo", interval1).unwrap();
-            manifest.add_dependency("bar", interval2).unwrap();
-            assert_eq!(manifest.dependencies.len(), 2);
-        }
-
-        #[test]
-        fn add_dependencies_src() {
-            // make this a bit more ergonomic to type
+        fn can_add_dependencies() {
             type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
@@ -144,7 +131,7 @@ mod tests {
         }
 
         #[test]
-        fn depends_on() {
+        fn can_identify_dependency_from_package_name_using_depends_on() {
             type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");
@@ -161,7 +148,7 @@ mod tests {
         }
 
         #[test]
-        fn depends_on_package() {
+        fn can_identify_dependency_on_specific_package_using_depends_on_package() {
             let pfs = |n: &str| Package::from_str(n).unwrap();
             type VI = VersionNumberInterval;
             use self::Range::*;
@@ -208,7 +195,7 @@ dependencies:
   bar: '0.1.0<1.0.0'"#;
 
         #[test]
-        fn deserialize_manifest() {
+        fn can_deserialize_manifest_from_yaml() {
             type VI = VersionNumberInterval;
             use self::Range::*;
             let result: serde_yaml::Result<Manifest> = serde_yaml::from_str(MANIFEST_NEW);
@@ -231,7 +218,7 @@ dependencies:
 
 
         #[test]
-        fn serialize_the_manifest() {
+        fn can_serialize_the_manifest_to_yaml() {
             type VI = VersionNumberInterval;
             use self::Range::*;
             let mut manifest = Manifest::new("fred-1.0.0");

@@ -8,7 +8,6 @@ use crate::interval::Range;
 use pest::Parser;
 use pest_derive::Parser;
 
-
 // We create a private _VerNumIntervalParser and a public
 // VerNumIntervalParser. They both have a single function, parse.
 // The public method is more ergonomic, hiding implementation details
@@ -132,35 +131,35 @@ mod test {
     use self::Range::*;
 
     #[test]
-    fn single_interval() {
+    fn can_parse_single_interval_from_str_without_spaces() {
         let test = VerNumIntervalParser::parse("1.2.3");
         let result = PI::from_range(&Single("1.2.3"));
         assert_eq!(test, result);
     }
 
     #[test]
-    fn half_open_interval_nospaces() {
+    fn can_parse_half_open_interval_from_str_with_no_spaces() {
         let test = VerNumIntervalParser::parse("1.2.3<2.0.0");
         let result = PI::from_range(&HalfOpen("1.2.3","2.0.0"));
         assert_eq!(test, result);
     }
 
     #[test]
-    fn half_open_interval_spaces() {
+    fn can_parse_half_open_interval_from_str_with_spaces() {
         let test = VerNumIntervalParser::parse(" 1.2.3 < 2.0.0  ");
         let result = PI::from_range(&HalfOpen("1.2.3","2.0.0"));
         assert_eq!(test, result);
     }
 
     #[test]
-    fn open_interval_nospaces() {
+    fn can_parse_open_interval_from_str_with_no_spaces() {
         let test = VerNumIntervalParser::parse("1.2.3<=2.0.0");
         let result = PI::from_range(&Open("1.2.3","2.0.0"));
         assert_eq!(test, result);
     }
 
     #[test]
-    fn open_interval_spaces() {
+    fn can_parse_open_interval_from_str_with_spaces() {
         let test = VerNumIntervalParser::parse("  1.2.3 <= 2.0.0  ");
         let result = PI::from_range(&Open("1.2.3","2.0.0"));
         assert_eq!(test, result);

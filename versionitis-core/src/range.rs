@@ -3,7 +3,7 @@
 //! Enum used to define a range
 //!
 
-/// Enum wrapping possible inputs to from_src
+/// Enum modeling candidate range types wrapping strings
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Range<'a> {
     Single(&'a str),

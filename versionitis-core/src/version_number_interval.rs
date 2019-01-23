@@ -1,15 +1,18 @@
 
-use crate::{errors::VersionitisError, interval::Interval};
-use crate::interval::Range;
-use std::fmt;
+use crate::{
+    errors::VersionitisError,
+    interval::{Interval, Range},
+    vernum_interval_parser::VerNumIntervalParser,
+    version_number::VersionNumber,
+};
+
 use serde::{
     de::{self, Deserializer, Visitor},
     ser::{Serialize, Serializer},
     Deserialize,
 };
-use crate::vernum_interval_parser::VerNumIntervalParser;
-use crate::version_number::VersionNumber;
-use std::fmt::Display;
+
+use std::fmt::{self, Display};
 
 /// an Interval of VersionNumbers. Interval is an enum whose variants
 /// define various intervals between VersionNumbers.
@@ -127,7 +130,6 @@ impl<'de> Deserialize<'de> for VersionNumberInterval {
         deserializer.deserialize_str(VersionNumberIntervalVisitor)
     }
 }
-
 
 #[cfg(test)]
 mod test {
