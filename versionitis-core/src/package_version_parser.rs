@@ -69,8 +69,6 @@ impl PackageVersionParser {
 #[cfg(test)]
 mod test {
     use super::*;
-    type PI = VersionNumberInterval;
-    use self::Range::*;
 
     #[test]
     fn can_parse_name_and_version() {
@@ -79,9 +77,54 @@ mod test {
             assert_eq!(name, "foo");
             assert_eq!(version, "1.2.3");
         } else {
-            assert_eq!(result, Err(VersionitisError::SerdeYamlError("redic".to_string())));
+            assert_eq!(result, Err(VersionitisError::SerdeYamlError("NO WAY".to_string())));
         }
     }
 
+    #[test]
+    fn can_parse_name_with_underscores() {
+        let result = PackageVersionParser::parse("foo_bar-1.2.3");
+        if let Ok((name, version)) =  result {
+            assert_eq!(name, "foo_bar");
+            assert_eq!(version, "1.2.3");
+        } else {
+            assert_eq!(result, Err(VersionitisError::SerdeYamlError("NO WAY".to_string())));
+        }
+    }
 
+    #[test]
+    fn name_cannot_start_with_digit() {
+        let result = PackageVersionParser::parse("1foo_bar-1.2.3");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn name_cannot_contain_multiple_contiguous_underscores() {
+        let result = PackageVersionParser::parse("foo__bar-1.2.3");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn name_cannot_end_with_underscore() {
+        let result = PackageVersionParser::parse("foo_bar_-1.2.3");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn name_cannot_start_with_space() {
+        let result = PackageVersionParser::parse(" foo_bar_1.2.3 ");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn can_pass_in_string_reference() {
+        let pkg = "foo_bar-1.2.3".to_string();
+        let result = PackageVersionParser::parse(&pkg);
+        if let Ok((name, version)) =  result {
+            assert_eq!(name, "foo_bar");
+            assert_eq!(version, "1.2.3");
+        } else {
+            assert_eq!(result, Err(VersionitisError::SerdeYamlError("NO WAY".to_string())));
+        }
+    }
 }
