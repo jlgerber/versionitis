@@ -172,7 +172,7 @@ impl RepoRepl {
         use versionitis::version_number_interval::VersionNumberInterval;
         use versionitis::interval::Range::*;
         type VI=VersionNumberInterval;
-        let mut manifest = Manifest::new("1.0.0");
+        let mut manifest = Manifest::new("fred-1.0.0");
         let interval1 = VI::from_range(&Single("0.1.0")).unwrap();
         let interval2 = VI::from_range(&HalfOpen("0.1.0", "1.0.0")).unwrap();
         let interval3 = VI::from_range(&Open("0.1.0", "1.0.0")).unwrap();
