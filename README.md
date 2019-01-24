@@ -12,14 +12,15 @@ package::reference | a versioned package which referenes its data
 manifest | a package with an interval_map of dependencies
 package_map | store a vector of packages and a map of package name,indices (not used)
 range | contains Range enum which is used to characterize input intervals
-repo | store a map of packages (not package_map)
+package_repo | store a map of packages (not package_map)
+manifest_repo | efficently store a map of manifests using an arena.
 traits | like it sounds... like it sounds
 vernum_interval_parser | parse an Interval<VersionNumber> from a str
 version_number_interval | Interval<VersionNumber> implementation
 version_number | encode semantics of a version number - a dot separated list of u16
 
 ## Improved Efficiency
-### Arena
+### Arena - DONE
 An arena will allow us to reduce heap allocations. Arenas work by storing a vector of owned data and handing out references to said data. As an example, one may keep an arena of package versions, and maintain reference semantics throughout the rest of the package.
 
 We will store the entity with ownership semantics in an arena and reference into that arena
@@ -70,6 +71,7 @@ foo-1 < foo-1.0.1
 
 ## PackageInterval from string
 Intervals are modeled as an enum generic over T.
+
 ```rust
 enum Interval<T> {
     Single(T),
@@ -79,12 +81,14 @@ enum Interval<T> {
 ```
 
 Principally, T is defined as Package. We need to define Interval as generic primarily because there are currently two different implemntations of package - owned and referenced. These versions differ with respect to ownership of their string contents. When serializing an Interval, the results are quite verbose:
+
 ```yaml
 interval:
     open:
        start: foo-1.0.0
        end: foo-2.0.0
 ```
+
 Mind you, this is already cleaned up, as we have a custom serialize for package and interval. However, we can do better. What we wnt to be able to do is define the serialized version of interval to be something like:
 
 yaml | rust
@@ -93,3 +97,60 @@ fred = 1.0.0 | Single(Package{name:fred, spec:[1,0,0]})
 fred = 1.3.2<=3.0.0 | HalfOpen { start: Package{name:fred, spec:[1,3,2]}, end: Package{name:fred, spec:[3,0,0]}}
 fred = 1.3.2^ | HalfOpen { start: Package{name:fred, spec:[1,3,2]}, end: Package{name:fred, spec:[2,0,0]}}
 fred = 1.3.2^2 | HalfOpen { start: Package{name:fred, spec:[1,3,2]}, end: Package{name:fred, spec:[3,0,0]}}
+
+## Merge Manifest and Package?
+Now that I have a manifest_repo with efficient manifest storage, perhaps I should think abouth combining the package and manifest?
+
+```yaml
+manifest:
+  package: foo-0.1.0
+  dependencies: {}
+```
+
+Maps to:
+
+```rust
+struct Manifest {
+    package: Package,
+    dependencies: IntervalMap
+}
+```
+
+Instead of:
+
+```
+struct Manifest {
+    name: String,
+    dependencies: IntervalMap
+}
+```
+## ManifestRepo - more structural changes
+ManifestRepo currently looks like this:
+```rust
+pub type PackageName = str;
+pub type ManifestArena = Arena<Manifest>;
+pub type _ManifestMap<'a> = HashMap<&'a PackageName, &'a Manifest>;
+
+pub struct ManifestRepo<'a, 'b: 'a> {
+    arena: &'b ManifestArena,
+    map: _ManifestMap<'a>,
+}
+
+```
+what if we change ```map```'s type to:
+
+```rust
+pub type _ManifestMap<'a> = HashMap<&'a VersionlessPackageName, HashMap<&'a PackageName, &'a Manifest>>;
+```
+
+we would have an extra level of indirection, but we could more efficiently zero in on what we are looking for.
+
+to get a list of versions:
+
+```rust
+fn get_versions(&self, name: &str) -> Result<Vec<&'a str>> {
+    let mut result: Vec<&'a str? = self.map.get(name)?.keys().collect();
+    result.sort();
+    result
+}
+```
