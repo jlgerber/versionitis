@@ -3,10 +3,12 @@
 //! map manifest versions to 1 based id, for use with SAT solver.
 //!
 use crate::manifest::Manifest;
-
+use crate::errors::VersionitisError;
 use std::collections::{HashMap, hash_map::Keys};
 use typed_arena::Arena;
 use std::collections::HashSet;
+use std::path::PathBuf;
+use std::fs;
 
 pub type PackageName = str;
 pub type ManifestArena = Arena<Manifest>;
@@ -24,6 +26,30 @@ impl<'a, 'b> ManifestRepo<'a, 'b> {
             arena,
             map: _ManifestMap::new(),
         }
+    }
+
+    /// construct a ManifestRepo from a directory full of manifests
+    pub fn from_disk<P: Into<PathBuf>>(path: P, arena: &'b ManifestArena) -> Result<Self, VersionitisError> {
+        // get path to directory
+        //let path = Path::new(path_str);
+        let path = path.into();
+        if !path.is_dir() {
+            return Err(VersionitisError::IoError(format!("path: {:?} does not exist", path)));
+        }
+
+        let mut repo = ManifestRepo::new(arena);
+
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_file() {
+                let file = fs::read_to_string(path)?;
+                let manifest = serde_yaml::from_str(file.as_str())?;
+                repo.add(manifest);
+            }
+        }
+
+        Ok(repo)
     }
 
     /// Add a manifest into the manifest_repo
@@ -46,23 +72,28 @@ impl<'a, 'b> ManifestRepo<'a, 'b> {
         self.map.keys()
     }
 
-    /// retrieve a hashset of packages
-    pub fn packages(&self) -> HashSet<&'a str> {
+    /// retrieve a hashset of packages. If versioned is true, we get
+    /// all versioned packages. Otherwise, we simply get the set of
+    /// package basenames (eg foo as opposed to foo-0.1.0)
+    pub fn packages(&self, versioned: bool) -> HashSet<&'a str> {
         let mut hashset: HashSet<&'a str> = HashSet::new();
-        for key in self.keys() {
-            let retstr = key.split("-").next().unwrap();
-            hashset.insert(retstr);
+        if versioned == true {
+            for key in self.keys() {
+                hashset.insert(key);
+            }
+        } else {
+            for key in self.keys() {
+                let retstr = key.split("-").next().unwrap();
+                hashset.insert(retstr);
+            }
         }
         hashset
     }
 
-     /// retrieve a hashset of packages
-    pub fn packages_sorted(&self) -> Vec<&'a str> {
-        let mut hashset: HashSet<&'a str> = HashSet::new();
-        for key in self.keys() {
-            let retstr = key.split("-").next().unwrap();
-            hashset.insert(retstr);
-        }
+     /// retrieve a hashset of packages. If versioned is true, we get all of the
+     /// package versions. Otherwise, we get the unique set of package names, sorted.
+    pub fn packages_sorted(&self, versioned: bool) -> Vec<&'a str> {
+        let hashset: HashSet<&'a str> = self.packages(versioned);
         let mut packages = hashset.iter().map(|x| *x).collect::<Vec<& str>>();
         packages.sort();
         packages
@@ -108,7 +139,7 @@ mod test {
 
 
     #[test]
-    fn can_get_package_hashset() {
+    fn can_get_package_hashset_without_versions() {
         let arena = ManifestArena::new();
         let mut repo = ManifestRepo::new(&arena);
         repo.add(Manifest::new("foo-0.1.0"));
@@ -117,7 +148,7 @@ mod test {
         repo.add_str("bar-0.2.0");
         repo.add_str("bar-0.2.1");
 
-        let packages = repo.packages();
+        let packages = repo.packages(false);
         let mut vpackages = packages.iter().map(|x| *x).collect::<Vec<& str>>();
         vpackages.sort();
         let val = vec!["bar", "foo"];
@@ -126,7 +157,7 @@ mod test {
     }
 
     #[test]
-    fn can_get_ordered_packages() {
+    fn can_get_ordered_packages_without_versions() {
         let arena = ManifestArena::new();
         let mut repo = ManifestRepo::new(&arena);
         repo.add(Manifest::new("foo-0.1.0"));
@@ -135,7 +166,7 @@ mod test {
         repo.add_str("bar-0.2.0");
         repo.add_str("bar-0.2.1");
 
-        let packages = repo.packages_sorted();
+        let packages = repo.packages_sorted(false);
 
         let val = vec!["bar", "foo"];
         assert_eq!(packages, val);
@@ -154,6 +185,25 @@ mod test {
         let idx_after = repo.get("foo-0.2.1");
         assert_eq!(repo.len(), 3);
         assert_eq!(idx, idx_after);
+    }
+
+    #[test]
+    fn can_load_from_disk() {
+        let version = env!("CARGO_MANIFEST_DIR");
+        let mut path = PathBuf::from(version);
+        path.push("test_resources");
+        path.push("manifest_repo");
+
+        let arena = ManifestArena::new();
+        let repo = ManifestRepo::from_disk(path, &arena).unwrap();
+        assert_eq!(repo.len(), 6);
+
+        let packages  = vec!["abc", "bar", "bla", "foo"];
+        assert_eq!(repo.packages_sorted(false), packages);
+
+        let versioned = vec![ "abc-0.1.0","bar-0.1.0",
+        "bla-0.2.0", "bla-0.3.0", "foo-0.1.0", "foo-1.0.0"];
+        assert_eq!(repo.packages_sorted(true), versioned);
     }
 
 }
