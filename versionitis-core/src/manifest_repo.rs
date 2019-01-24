@@ -1,6 +1,6 @@
-//! package_map
+//! manifest_repo.rs
 //!
-//! map manifest versions to 1 based id, for use with SAT solver.
+//! create a struct which owns package manifests.
 //!
 use crate::manifest::Manifest;
 use crate::errors::VersionitisError;
@@ -31,7 +31,6 @@ impl<'a, 'b> ManifestRepo<'a, 'b> {
     /// construct a ManifestRepo from a directory full of manifests
     pub fn from_disk<P: Into<PathBuf>>(path: P, arena: &'b ManifestArena) -> Result<Self, VersionitisError> {
         // get path to directory
-        //let path = Path::new(path_str);
         let path = path.into();
         if !path.is_dir() {
             return Err(VersionitisError::IoError(format!("path: {:?} does not exist", path)));
