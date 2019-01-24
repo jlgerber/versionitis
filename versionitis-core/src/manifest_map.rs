@@ -5,7 +5,19 @@
 use crate::manifest::Manifest;
 
 use std::collections::HashMap;
+use typed_arena::Arena;
 
+pub type PackageName = str;
+pub type ManifestArena = Arena<Manifest>;
+pub type _ManifestMap<'a> = HashMap<&'a PackageName, &'a Manifest>;
+
+pub struct ManifestMap<'a, 'b: 'a> {
+    arena: &'b ManifestArena,
+    map: _ManifestMap<'a>,
+}
+
+//impl<'a, 'b> PackMap<'a, 'b> {
+/*
 type IdxType = i32;
 type PMap = HashMap<String, IdxType>;
 
@@ -14,22 +26,28 @@ pub struct ManifestMap {
     arena: Vec<Manifest>,
     map: PMap,
 }
+*/
 
-impl ManifestMap {
+impl<'a, 'b> ManifestMap<'a, 'b> {
     /// New up an empty ManifestMap
-    pub fn new() -> Self {
+    pub fn new(arena: &'b ManifestArena) -> Self {
         Self {
-            arena: Vec::new(),
-            map: PMap::new(),
+            arena,
+            map: _ManifestMap::new(),
         }
     }
 
-    /// add a Manifest to the map if it doesnt exist
-    pub fn add(&mut self, version: Manifest) {
-        let name = version.package().to_string();
-        if !self.has(name.as_str()) {
-            self.arena.push(version);
-            self.map.insert(name, self.arena.len() as IdxType);
+
+    pub fn add(&mut self, manifest: Manifest) {
+        let manifest: &'b Manifest = self.arena.alloc(manifest);
+        let key = manifest.package();
+        self.map.insert(key, manifest);
+    }
+
+    pub fn get(&self, name: &str) -> Option<&'a Manifest> {
+        match self.map.get(name) {
+            Some(map) => Some(*map),
+            None => None
         }
     }
 
@@ -47,26 +65,6 @@ impl ManifestMap {
         self.add(version_num);
     }
 
-    /// Retrieve an Option wrapping a reference to an IdxType
-    pub fn get(&self, value: &str) -> Option<IdxType> {
-        match self.map.get(value) {
-            Some(value) => Some(*value),
-            None => None,
-        }
-    }
-
-    /// Retrueve the Manifest associated with a particular literal. The literal
-    /// is a positive integer (ie it is stored in 1-based list to be compatible with
-    /// SAT solver semantics )
-    pub fn at_lit(&self, lit: IdxType) -> Option<&Manifest> {
-        self.arena.get((lit - 1) as usize)
-    }
-
-    /// Return an option wrapped mutable reference to a Manifest
-    pub fn at_lit_mut(&mut self, lit: IdxType) -> Option<&mut Manifest> {
-        self.arena.get_mut((lit - 1) as usize)
-    }
-
     /// Retrieve the number of elements stored
     pub fn len(&self) -> usize {
         self.map.len()
@@ -79,21 +77,23 @@ mod test {
 
     #[test]
     fn can_add_manifests_into_map() {
-        let mut mymap = ManifestMap::new();
+        let arena = ManifestArena::new();
+        let mut mymap = ManifestMap::new(&arena);
         mymap.add(Manifest::new("foo-0.1.0"));
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
 
         assert_eq!(mymap.len(), 3);
-        assert_eq!(mymap.get("foo-0.1.0"), Some(1));
-        assert_eq!(mymap.get("foo-0.2.0"), Some(2));
-        assert_eq!(mymap.get("foo-0.2.1"), Some(3));
+        assert_eq!(mymap.get("foo-0.1.0"), Some(&Manifest::new("foo-0.1.0")));
+        assert_eq!(mymap.get("foo-0.2.0"), Some(&Manifest::new("foo-0.2.0")));
+        assert_eq!(mymap.get("foo-0.2.1"), Some(&Manifest::new("foo-0.2.1")));
         assert_eq!(mymap.get("foo-bar"), None);
     }
 
     #[test]
     fn can_add_multiple_times() {
-        let mut mymap = ManifestMap::new();
+        let arena = ManifestArena::new();
+        let mut mymap = ManifestMap::new(&arena);
         mymap.add(Manifest::new("foo-0.1.0"));
         mymap.add_str("foo-0.2.0");
         mymap.add_str("foo-0.2.1");
