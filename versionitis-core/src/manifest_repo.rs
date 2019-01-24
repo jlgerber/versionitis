@@ -19,6 +19,12 @@ pub struct ManifestRepo<'a, 'b: 'a> {
     map: _ManifestMap<'a>,
 }
 
+impl<'a, 'b> std::fmt::Debug for ManifestRepo<'a, 'b> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Manifest Repo\n{:?}", self.map)
+    }
+}
+
 impl<'a, 'b> ManifestRepo<'a, 'b> {
     /// New up an empty ManifestRepo
     pub fn new(arena: &'b ManifestArena) -> Self {

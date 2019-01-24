@@ -5,7 +5,8 @@ use std::fs::File;
 use std::io::{self, Write,};
 use std::path::Path;
 use versionitis::manifest::Manifest;
-
+use std::path::PathBuf;
+use versionitis::manifest_repo::{ManifestArena,ManifestRepo};
 type Feedback = Option<Result<String, String>>;
 
 struct PackageRepoRepl {
@@ -45,6 +46,7 @@ impl PackageRepoRepl {
         println!("(v) - add version");
         println!("(m) - serialize manifest test");
         println!("(n) - read manifest from disk");
+        println!("(a) - read manifest repo from disk and display");
         println!("(q) - quit");
 
         match &self.feedback {
@@ -223,7 +225,7 @@ impl PackageRepoRepl {
             }
 
             "r" => {
-                println!("r - fead repo from file");
+                println!("r - read repo from file");
                 self.load_from_file()?;
             }
 
@@ -259,7 +261,19 @@ impl PackageRepoRepl {
                     }
                 }
             }
+            "a" => {
+                let version = env!("CARGO_MANIFEST_DIR");
+                let mut path = PathBuf::from(version);
+                path.push("..");
+                path.push("versionitis-core");
+                path.push("test_resources");
+                path.push("manifest_repo");
 
+                let arena = ManifestArena::new();
+                let repo = ManifestRepo::from_disk(path, &arena).unwrap();
+                println!("{:#?}", repo);
+                self.await_user();
+            }
             "q" => {
                 println!("quiting");
                 return Ok(true);
