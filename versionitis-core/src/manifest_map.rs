@@ -4,8 +4,9 @@
 //!
 use crate::manifest::Manifest;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Keys};
 use typed_arena::Arena;
+use std::collections::HashSet;
 
 pub type PackageName = str;
 pub type ManifestArena = Arena<Manifest>;
@@ -16,18 +17,6 @@ pub struct ManifestMap<'a, 'b: 'a> {
     map: _ManifestMap<'a>,
 }
 
-//impl<'a, 'b> PackMap<'a, 'b> {
-/*
-type IdxType = i32;
-type PMap = HashMap<String, IdxType>;
-
-/// Store packages in a SAT friendly structure
-pub struct ManifestMap {
-    arena: Vec<Manifest>,
-    map: PMap,
-}
-*/
-
 impl<'a, 'b> ManifestMap<'a, 'b> {
     /// New up an empty ManifestMap
     pub fn new(arena: &'b ManifestArena) -> Self {
@@ -37,13 +26,14 @@ impl<'a, 'b> ManifestMap<'a, 'b> {
         }
     }
 
-
+    /// Add a manifest into the manifest_map
     pub fn add(&mut self, manifest: Manifest) {
         let manifest: &'b Manifest = self.arena.alloc(manifest);
         let key = manifest.package();
         self.map.insert(key, manifest);
     }
 
+    /// Retrieve an option wrapped Manifest reference given a package name.
     pub fn get(&self, name: &str) -> Option<&'a Manifest> {
         match self.map.get(name) {
             Some(map) => Some(*map),
@@ -51,13 +41,39 @@ impl<'a, 'b> ManifestMap<'a, 'b> {
         }
     }
 
-    /// Given a manifest version str, determine whether the manifest map
-    /// contains the manifest version.
-    pub fn has(&self, version_str: &str) -> bool {
-        self.map.contains_key(version_str)
+    /// Retrieve an iterator over keys
+    pub fn keys(&self) -> Keys<&'a PackageName, &'a Manifest> {
+        self.map.keys()
     }
 
-    /// given a &str representing a valid manifest name, create a Manifest
+    /// retrieve a hashset of packages
+    pub fn packages(&self) -> HashSet<&'a str> {
+        let mut hashset: HashSet<&'a str> = HashSet::new();
+        for key in self.keys() {
+            let retstr = key.split("-").next().unwrap();
+            hashset.insert(retstr);
+        }
+        hashset
+    }
+
+     /// retrieve a hashset of packages
+    pub fn packages_sorted(&self) -> Vec<&'a str> {
+        let mut hashset: HashSet<&'a str> = HashSet::new();
+        for key in self.keys() {
+            let retstr = key.split("-").next().unwrap();
+            hashset.insert(retstr);
+        }
+        let mut packages = hashset.iter().map(|x| *x).collect::<Vec<& str>>();
+        packages.sort();
+        packages
+    }
+    /// Given a package name, determine whether the manifest map
+    /// contains the manifest version or not.
+    pub fn has(&self, package: &str) -> bool {
+        self.map.contains_key(package)
+    }
+
+    /// Given a &str representing a valid manifest name, create a Manifest
     /// and add it into the ManifestMap
     pub fn add_str(&mut self, vs: &str) {
         // todo: deal with error
@@ -89,6 +105,42 @@ mod test {
         assert_eq!(mymap.get("foo-0.2.1"), Some(&Manifest::new("foo-0.2.1")));
         assert_eq!(mymap.get("foo-bar"), None);
     }
+
+
+    #[test]
+    fn can_get_package_hashset() {
+        let arena = ManifestArena::new();
+        let mut mymap = ManifestMap::new(&arena);
+        mymap.add(Manifest::new("foo-0.1.0"));
+        mymap.add_str("foo-0.2.0");
+        mymap.add_str("foo-0.2.1");
+        mymap.add_str("bar-0.2.0");
+        mymap.add_str("bar-0.2.1");
+
+        let packages = mymap.packages();
+        let mut vpackages = packages.iter().map(|x| *x).collect::<Vec<& str>>();
+        vpackages.sort();
+        let val = vec!["bar", "foo"];
+        assert_eq!(vpackages, val);
+        assert_eq!(packages.len(), 2);
+    }
+
+    #[test]
+    fn can_get_ordered_packages() {
+        let arena = ManifestArena::new();
+        let mut mymap = ManifestMap::new(&arena);
+        mymap.add(Manifest::new("foo-0.1.0"));
+        mymap.add_str("foo-0.2.0");
+        mymap.add_str("foo-0.2.1");
+        mymap.add_str("bar-0.2.0");
+        mymap.add_str("bar-0.2.1");
+
+        let packages = mymap.packages_sorted();
+
+        let val = vec!["bar", "foo"];
+        assert_eq!(packages, val);
+    }
+
 
     #[test]
     fn can_add_multiple_times() {
