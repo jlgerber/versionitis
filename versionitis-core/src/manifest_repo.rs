@@ -12,13 +12,13 @@ pub type PackageName = str;
 pub type ManifestArena = Arena<Manifest>;
 pub type _ManifestMap<'a> = HashMap<&'a PackageName, &'a Manifest>;
 
-pub struct ManifestMap<'a, 'b: 'a> {
+pub struct ManifestRepo<'a, 'b: 'a> {
     arena: &'b ManifestArena,
     map: _ManifestMap<'a>,
 }
 
-impl<'a, 'b> ManifestMap<'a, 'b> {
-    /// New up an empty ManifestMap
+impl<'a, 'b> ManifestRepo<'a, 'b> {
+    /// New up an empty ManifestRepo
     pub fn new(arena: &'b ManifestArena) -> Self {
         Self {
             arena,
@@ -26,7 +26,7 @@ impl<'a, 'b> ManifestMap<'a, 'b> {
         }
     }
 
-    /// Add a manifest into the manifest_map
+    /// Add a manifest into the manifest_repo
     pub fn add(&mut self, manifest: Manifest) {
         let manifest: &'b Manifest = self.arena.alloc(manifest);
         let key = manifest.package();
@@ -74,7 +74,7 @@ impl<'a, 'b> ManifestMap<'a, 'b> {
     }
 
     /// Given a &str representing a valid manifest name, create a Manifest
-    /// and add it into the ManifestMap
+    /// and add it into the ManifestRepo
     pub fn add_str(&mut self, vs: &str) {
         // todo: deal with error
         let version_num = Manifest::new(vs);
@@ -94,30 +94,30 @@ mod test {
     #[test]
     fn can_add_manifests_into_map() {
         let arena = ManifestArena::new();
-        let mut mymap = ManifestMap::new(&arena);
-        mymap.add(Manifest::new("foo-0.1.0"));
-        mymap.add_str("foo-0.2.0");
-        mymap.add_str("foo-0.2.1");
+        let mut repo = ManifestRepo::new(&arena);
+        repo.add(Manifest::new("foo-0.1.0"));
+        repo.add_str("foo-0.2.0");
+        repo.add_str("foo-0.2.1");
 
-        assert_eq!(mymap.len(), 3);
-        assert_eq!(mymap.get("foo-0.1.0"), Some(&Manifest::new("foo-0.1.0")));
-        assert_eq!(mymap.get("foo-0.2.0"), Some(&Manifest::new("foo-0.2.0")));
-        assert_eq!(mymap.get("foo-0.2.1"), Some(&Manifest::new("foo-0.2.1")));
-        assert_eq!(mymap.get("foo-bar"), None);
+        assert_eq!(repo.len(), 3);
+        assert_eq!(repo.get("foo-0.1.0"), Some(&Manifest::new("foo-0.1.0")));
+        assert_eq!(repo.get("foo-0.2.0"), Some(&Manifest::new("foo-0.2.0")));
+        assert_eq!(repo.get("foo-0.2.1"), Some(&Manifest::new("foo-0.2.1")));
+        assert_eq!(repo.get("foo-bar"), None);
     }
 
 
     #[test]
     fn can_get_package_hashset() {
         let arena = ManifestArena::new();
-        let mut mymap = ManifestMap::new(&arena);
-        mymap.add(Manifest::new("foo-0.1.0"));
-        mymap.add_str("foo-0.2.0");
-        mymap.add_str("foo-0.2.1");
-        mymap.add_str("bar-0.2.0");
-        mymap.add_str("bar-0.2.1");
+        let mut repo = ManifestRepo::new(&arena);
+        repo.add(Manifest::new("foo-0.1.0"));
+        repo.add_str("foo-0.2.0");
+        repo.add_str("foo-0.2.1");
+        repo.add_str("bar-0.2.0");
+        repo.add_str("bar-0.2.1");
 
-        let packages = mymap.packages();
+        let packages = repo.packages();
         let mut vpackages = packages.iter().map(|x| *x).collect::<Vec<& str>>();
         vpackages.sort();
         let val = vec!["bar", "foo"];
@@ -128,14 +128,14 @@ mod test {
     #[test]
     fn can_get_ordered_packages() {
         let arena = ManifestArena::new();
-        let mut mymap = ManifestMap::new(&arena);
-        mymap.add(Manifest::new("foo-0.1.0"));
-        mymap.add_str("foo-0.2.0");
-        mymap.add_str("foo-0.2.1");
-        mymap.add_str("bar-0.2.0");
-        mymap.add_str("bar-0.2.1");
+        let mut repo = ManifestRepo::new(&arena);
+        repo.add(Manifest::new("foo-0.1.0"));
+        repo.add_str("foo-0.2.0");
+        repo.add_str("foo-0.2.1");
+        repo.add_str("bar-0.2.0");
+        repo.add_str("bar-0.2.1");
 
-        let packages = mymap.packages_sorted();
+        let packages = repo.packages_sorted();
 
         let val = vec!["bar", "foo"];
         assert_eq!(packages, val);
@@ -145,14 +145,14 @@ mod test {
     #[test]
     fn can_add_multiple_times() {
         let arena = ManifestArena::new();
-        let mut mymap = ManifestMap::new(&arena);
-        mymap.add(Manifest::new("foo-0.1.0"));
-        mymap.add_str("foo-0.2.0");
-        mymap.add_str("foo-0.2.1");
-        let idx = mymap.get("foo-0.2.1");
-        mymap.add_str("foo-0.2.1");
-        let idx_after = mymap.get("foo-0.2.1");
-        assert_eq!(mymap.len(), 3);
+        let mut repo = ManifestRepo::new(&arena);
+        repo.add(Manifest::new("foo-0.1.0"));
+        repo.add_str("foo-0.2.0");
+        repo.add_str("foo-0.2.1");
+        let idx = repo.get("foo-0.2.1");
+        repo.add_str("foo-0.2.1");
+        let idx_after = repo.get("foo-0.2.1");
+        assert_eq!(repo.len(), 3);
         assert_eq!(idx, idx_after);
     }
 
